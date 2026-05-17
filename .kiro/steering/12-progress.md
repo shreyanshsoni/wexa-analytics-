@@ -6,8 +6,8 @@
 
 ## Current Status
 ```
-Phase:        3 — Data Ingestion
-Status:       NOT STARTED — Phase 2 polished and committed, ready to start
+Phase:        4 — Dashboards & Widgets
+Status:       NOT STARTED — Phase 3 complete, ready to start
 Last Updated: 2026-05-17
 Last AI:      Claude (claude.ai code)
 ```
@@ -81,8 +81,14 @@ Next Action:  Implement ingestion_service.py, then api/v1/ingestion.py
 - [x] Frontend: Login + signup redirect to /overview if already authenticated
 - [x] Git: Fixed broken frontend submodule — frontend now tracked as regular files
 
-## Phase 3 — Data Ingestion
-- [ ] NOT STARTED
+## Phase 3 — Data Ingestion ✅ COMPLETE
+- [x] Backend: app/schemas/event.py — AliasChoices for "event"/"event_name", stats schema
+- [x] Backend: app/services/ingestion_service.py — rate limiting (1000/min org, 100/min key) + Celery dispatch
+- [x] Backend: app/workers/tasks/ingestion_tasks.py — real DB writes (single, batch, CSV)
+- [x] Backend: app/api/v1/ingestion.py — POST /ingest/events, /ingest/events/batch, /ingest/csv, GET /ingest/stats
+- [x] Backend: app/api/router.py — ingestion router registered
+- [x] Frontend: ingestion page — API key management, CSV drag-and-drop upload, stats cards, quick-start snippet
+- [x] ruff ✅ 0 errors, mypy ✅ 0 errors, tsc ✅ 0 errors
 
 ## Phase 4 — Dashboards & Widgets
 - [ ] NOT STARTED

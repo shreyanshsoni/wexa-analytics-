@@ -156,8 +156,19 @@ export interface HealthCheck {
 }
 
 export interface IngestResult {
-  status: string
-  message?: string
-  count?: number
-  batch_id?: string
+  accepted: number
+  batch_id: string
+  message: string
+}
+
+export interface CsvUploadResult {
+  upload_id: string
+  message: string
+}
+
+export interface IngestionStats {
+  total_today: number
+  total_week: number
+  total_month: number
+  total_all_time: number
 }

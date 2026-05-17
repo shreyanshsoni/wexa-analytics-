@@ -2,13 +2,18 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 
 from app.schemas.common import BaseResponse, BaseSchema
 
 
 class EventIngestionRequest(BaseSchema):
-    event_name: str = Field(min_length=1, max_length=255)
+    # Accept both "event" (spec/curl format) and "event_name" (internal)
+    event_name: str = Field(
+        min_length=1,
+        max_length=255,
+        validation_alias=AliasChoices("event", "event_name"),
+    )
     properties: dict[str, Any] = Field(default_factory=dict)
     timestamp: datetime | None = None
 
@@ -34,4 +39,17 @@ class EventResponse(BaseResponse):
 
 class IngestionResponse(BaseSchema):
     accepted: int
+    batch_id: str
     message: str
+
+
+class CsvUploadResponse(BaseSchema):
+    upload_id: str
+    message: str
+
+
+class IngestionStatsResponse(BaseSchema):
+    total_today: int
+    total_week: int
+    total_month: int
+    total_all_time: int
