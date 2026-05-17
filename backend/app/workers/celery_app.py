@@ -1,3 +1,5 @@
+import ssl
+
 from celery import Celery
 
 from app.core.config import settings
@@ -13,6 +15,8 @@ celery_app = Celery(
     ],
 )
 
+_ssl_options = {"ssl_cert_reqs": ssl.CERT_NONE} if settings.REDIS_URL.startswith("rediss://") else {}
+
 celery_app.conf.update(
     task_serializer="json",
     accept_content=["json"],
@@ -22,4 +26,6 @@ celery_app.conf.update(
     task_track_started=True,
     broker_connection_retry_on_startup=True,
     broker_transport_options={"visibility_timeout": 3600},
+    broker_use_ssl=_ssl_options or None,
+    redis_backend_use_ssl=_ssl_options or None,
 )
