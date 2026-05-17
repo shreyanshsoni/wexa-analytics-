@@ -1,0 +1,145 @@
+# 12-progress.md — Current Progress Tracker
+# ⚠️ THIS FILE MUST BE UPDATED AFTER EVERY TASK COMPLETED
+# ⚠️ THIS IS THE FIRST FILE ANY AI READS AFTER 00-master.md
+
+---
+
+## Current Status
+```
+Phase:        2 — Authentication & Multi-Tenancy
+Status:       NOT STARTED
+Last Updated: 2026-05-17
+Last AI:      Claude (claude.ai code)
+```
+
+---
+
+## Current Task
+```
+Task:         Phase 2 kickoff — Auth & Multi-Tenancy
+File:         Not started yet
+Function:     N/A
+Next Action:  Implement auth_service.py, then api/v1/auth.py
+```
+
+---
+
+## Phase 1 — Architecture Setup ✅ COMPLETE
+- [x] Monorepo folder structure created
+- [x] Backend: pyproject.toml configured (setuptools build, ruff + mypy)
+- [x] Backend: FastAPI app created (app/main.py with lifespan)
+- [x] Backend: Database connection (core/database.py — asyncpg, pool_size=10)
+- [x] Backend: Redis connection (core/redis.py — ssl_cert_reqs=None for Upstash)
+- [x] Backend: All SQLAlchemy models created (15 models)
+- [x] Backend: Alembic initialized and first migration run (20260517_initial_schema)
+- [x] Backend: Celery app configured (workers/celery_app.py)
+- [x] Backend: Health check endpoint working (/api/v1/health)
+- [x] Backend: Custom exceptions defined (core/exceptions.py)
+- [x] Backend: Middleware configured (CORS, correlation ID, exception handlers)
+- [x] Backend: Pydantic v2 schemas (auth, org, event, dashboard, widget, alert, report)
+- [x] Backend: Repositories (base + user, org, event, dashboard, widget, alert, report)
+- [x] Frontend: Next.js app initialized (Next.js 15, TypeScript, Tailwind)
+- [x] Frontend: Shadcn/UI installed (button, card, input, label, badge, skeleton, sonner, etc.)
+- [x] Frontend: TanStack Query v5 provider in layout.tsx
+- [x] Frontend: Zustand stores created (authStore, dashboardStore, uiStore)
+- [x] Frontend: API client (axios) configured with token interceptors
+- [x] Frontend: Route groups created (auth) + (dashboard) with skeleton pages
+- [x] Git: .gitignore in place (no .env files)
+- [x] Makefile: All commands defined
+
+## Phase 1 Definition of Done — ALL VERIFIED ✅
+- [x] GET /api/v1/health → {"status": "healthy", "checks": {"database": "healthy", "redis": "healthy"}}
+- [x] Frontend builds with no TypeScript errors (npm run build)
+- [x] alembic history shows initial migration (a4bfc2bf69b6)
+- [x] All 15 DB tables created in Neon
+
+## Phase 2 — Authentication & Multi-Tenancy
+- [ ] NOT STARTED
+
+## Phase 3 — Data Ingestion
+- [ ] NOT STARTED
+
+## Phase 4 — Dashboards & Widgets
+- [ ] NOT STARTED
+
+## Phase 5 — Alerts (Should Have)
+- [ ] NOT STARTED
+
+## Phase 6 — WebSockets (Should Have)
+- [ ] NOT STARTED
+
+---
+
+## Git Tags Created
+```
+phase-1-complete (to be created after commit)
+```
+
+---
+
+## Decisions Made This Session
+```
+1. Resend (email) deferred to Phase 5 — not needed for Must Have tasks
+2. Redis ssl_cert_reqs=None for Upstash on macOS (SSL cert verification issue)
+3. DATABASE_URL converted to postgresql+asyncpg:// in config.py computed_field
+4. Alembic uses async engine (asyncio.run pattern) — no psycopg2 needed
+5. layout.tsx uses "use client" for QueryClientProvider — metadata moved out
+```
+
+---
+
+## Known Issues / Blockers
+```
+None
+```
+
+---
+
+## External Accounts Status
+```
+GitHub:   [ ] Created  Repo URL: _______________
+Neon:     [x] Created  DB tables created successfully
+Upstash:  [x] Created  Redis healthy (ssl_cert_reqs=None fix applied)
+Resend:   [ ] Not needed until Phase 5
+Railway:  [ ] Phase 2 deploy only
+Vercel:   [ ] Phase 2 deploy only
+```
+
+---
+
+## Environment Variables Status
+```
+DATABASE_URL:                    [x] Set in backend/.env
+REDIS_URL:                       [x] Set in backend/.env
+SECRET_KEY:                      [x] Set in backend/.env (generated)
+ACCESS_TOKEN_EXPIRE_MINUTES:     [x] Set (15)
+REFRESH_TOKEN_EXPIRE_DAYS:       [x] Set (7)
+RESEND_API_KEY:                  [ ] Empty — Phase 5 only
+EMAIL_FROM:                      [x] Set (placeholder)
+ENVIRONMENT:                     [x] development
+FRONTEND_URL:                    [x] http://localhost:3000
+NEXT_PUBLIC_API_URL:             [x] Set in frontend/.env.local
+NEXT_PUBLIC_WS_URL:              [x] Set in frontend/.env.local
+```
+
+---
+
+## Instructions For Next AI Session
+
+When you start a new session:
+1. Read this file completely
+2. Read `00-master.md`
+3. Read `11-build-strategy.md`
+4. Read `06-security-auth.md` (domain file for Phase 2)
+5. Answer verification questions
+6. Wait for user confirmation
+7. Start Phase 2 from the first unchecked item
+
+The next task to work on is:
+```
+PHASE 2 — AUTH & MULTI-TENANCY
+Start with: backend/app/services/auth_service.py
+Then: backend/app/api/v1/auth.py
+Then: backend/app/core/dependencies.py (add get_current_user)
+Then: frontend login/signup pages
+```

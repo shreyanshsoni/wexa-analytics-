@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \\\\ *)",
+      "Bash(python3 -c \"import secrets; print\\(secrets.token_hex\\(32\\)\\)\")",
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/alembic revision *)",
+      "Bash(.venv/bin/alembic upgrade *)",
+      "Bash(npx create-next-app@latest frontend --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --yes)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add card input label badge separator skeleton toast)",
+      "Bash(npx shadcn@latest add card input label badge separator skeleton sonner select dialog dropdown-menu)",
+      "Bash(.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(curl -s http://localhost:8000/api/v1/health)",
+      "Bash(python3 -m json.tool)",
+      "Bash(npm run *)",
+      "Bash(git add *)"
+    ],
+    "additionalDirectories": [
+      "/Users/shreyanshsoni/Documents/wexa-analytics/frontend/src/app/(auth)/invite"
+    ]
+  }
+}
