@@ -6,7 +6,7 @@
 
 ## Current Status
 ```
-Phase:        2 — Authentication & Multi-Tenancy
+Phase:        3 — Data Ingestion
 Status:       NOT STARTED
 Last Updated: 2026-05-17
 Last AI:      Claude (claude.ai code)
@@ -16,10 +16,10 @@ Last AI:      Claude (claude.ai code)
 
 ## Current Task
 ```
-Task:         Phase 2 kickoff — Auth & Multi-Tenancy
+Task:         Phase 3 kickoff — Data Ingestion
 File:         Not started yet
 Function:     N/A
-Next Action:  Implement auth_service.py, then api/v1/auth.py
+Next Action:  Implement ingestion_service.py, then api/v1/ingestion.py
 ```
 
 ---
@@ -53,8 +53,21 @@ Next Action:  Implement auth_service.py, then api/v1/auth.py
 - [x] alembic history shows initial migration (a4bfc2bf69b6)
 - [x] All 15 DB tables created in Neon
 
-## Phase 2 — Authentication & Multi-Tenancy
-- [ ] NOT STARTED
+## Phase 2 — Authentication & Multi-Tenancy ✅ COMPLETE
+- [x] Backend: auth_service.py (signup, login, refresh, logout, accept_invite)
+- [x] Backend: organization_service.py (get org, members, invite, remove, update role)
+- [x] Backend: api_key_service.py + api_key_repo.py (create, list, revoke, rotate)
+- [x] Backend: dependencies.py (get_current_user, get_current_org, RequireOwner/Admin/Analyst/Member)
+- [x] Backend: api/v1/auth.py (signup, login, refresh, logout, /me, invite accept)
+- [x] Backend: api/v1/organizations.py (me, update, invite, members, remove, update role)
+- [x] Backend: api/v1/api_keys.py (list, create, revoke, rotate)
+- [x] Backend: schemas updated (ApiResponse wrapper, AuthData, OrgOut, InviteOut, ApiKeyOut)
+- [x] Frontend: src/types/api.ts fully typed per API shapes doc
+- [x] Frontend: login page with form + JWT store
+- [x] Frontend: signup page with org_name field
+- [x] Frontend: invite accept page /invite/[token]
+- [x] Frontend: dashboard layout with auth guard (redirects to /login if not authenticated)
+- [x] ruff ✅ 0 errors, mypy ✅ 0 errors (62 files), pytest ✅ 5/5, tsc ✅, eslint ✅
 
 ## Phase 3 — Data Ingestion
 - [ ] NOT STARTED

@@ -1,7 +1,10 @@
 import uuid
 from datetime import datetime
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict
+
+T = TypeVar("T")
 
 
 class BaseSchema(BaseModel):
@@ -14,12 +17,28 @@ class BaseResponse(BaseSchema):
     updated_at: datetime
 
 
+class Meta(BaseModel):
+    request_id: str
+    timestamp: datetime
+
+
+class ApiResponse(BaseModel, Generic[T]):
+    data: T
+    meta: Meta | None = None
+
+
 class MessageResponse(BaseModel):
     message: str
 
 
-class PaginatedResponse(BaseSchema):
+class PaginatedMeta(BaseModel):
     total: int
     page: int
-    page_size: int
-    items: list  # type: ignore[type-arg]
+    per_page: int
+    total_pages: int
+
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    data: list[T]
+    pagination: PaginatedMeta
+    meta: Meta | None = None

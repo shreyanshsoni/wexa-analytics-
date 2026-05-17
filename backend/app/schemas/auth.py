@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import EmailStr, Field, field_validator
 
@@ -9,7 +10,7 @@ class SignupRequest(BaseSchema):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     full_name: str = Field(min_length=1, max_length=255)
-    organization_name: str = Field(min_length=1, max_length=255)
+    org_name: str = Field(min_length=1, max_length=255)
 
     @field_validator("password")
     @classmethod
@@ -26,30 +27,51 @@ class LoginRequest(BaseSchema):
     password: str
 
 
-class TokenResponse(BaseSchema):
+class UserOut(BaseResponse):
+    email: str
+    full_name: str
+    is_active: bool
+
+
+class OrgOut(BaseSchema):
+    id: uuid.UUID
+    name: str
+    slug: str
+
+
+class AuthData(BaseSchema):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
+    org: OrgOut
+    role: str
+
+
+class TokenData(BaseSchema):
     access_token: str
     token_type: str = "bearer"
 
 
-class UserResponse(BaseResponse):
-    email: str
-    full_name: str
-    is_active: bool
-    is_verified: bool
-
-
 class InviteRequest(BaseSchema):
     email: EmailStr
-    role: str = "viewer"
+    role: str = Field(default="viewer", pattern="^(admin|analyst|viewer)$")
 
 
 class InviteAcceptRequest(BaseSchema):
     full_name: str = Field(min_length=1, max_length=255)
     password: str = Field(min_length=8, max_length=128)
 
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if not any(c.isupper() for c in v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one digit")
+        return v
 
-class InviteResponse(BaseSchema):
-    id: uuid.UUID
-    email: str
-    role: str
-    organization_name: str
+
+class InviteOut(BaseSchema):
+    invite_id: uuid.UUID
+    message: str
+    expires_at: datetime
