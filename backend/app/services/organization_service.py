@@ -72,6 +72,8 @@ async def invite_member(
     invited_by_id: uuid.UUID,
     email: str,
     role: str,
+    inviter_name: str = "",
+    org_name: str = "",
 ) -> Invite:
     existing = await session.execute(
         select(Invite).where(
@@ -110,6 +112,20 @@ async def invite_member(
     session.add(invite)
     await session.commit()
     await session.refresh(invite)
+
+    try:
+        from app.core.email import send_invite_email
+        await send_invite_email(
+            to_email=email,
+            inviter_name=inviter_name,
+            org_name=org_name,
+            invite_token=invite.token,
+            role=role,
+        )
+    except Exception:
+        import structlog as _log
+        _log.get_logger().warning("invite_email_failed", to=email)
+
     return invite
 
 

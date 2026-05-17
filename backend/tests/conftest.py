@@ -1,6 +1,7 @@
 """Shared test fixtures and helpers for all phases."""
 import uuid
 from typing import AsyncGenerator
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -21,6 +22,15 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
         base_url="http://test",
     ) as ac:
         yield ac
+
+
+# ── email mock (session-wide) — prevents real HTTP calls to Resend in tests ──
+
+@pytest.fixture(autouse=True, scope="session")
+def mock_send_invite_email():
+    """Auto-mock email sending for all tests. Use mock_email fixture to inspect calls."""
+    with patch("app.core.email.send_invite_email", new_callable=AsyncMock) as m:
+        yield m
 
 
 # ── data generators ───────────────────────────────────────────────────────────

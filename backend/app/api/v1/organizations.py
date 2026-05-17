@@ -66,6 +66,8 @@ async def invite_member(
         invited_by_id=user.id,
         email=body.email,
         role=body.role,
+        inviter_name=user.full_name,
+        org_name=org.name,
     )
     return ApiResponse(
         data=InviteOut(
