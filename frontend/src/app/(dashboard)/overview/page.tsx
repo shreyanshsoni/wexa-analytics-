@@ -15,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -75,11 +74,9 @@ function CreateDashboardDialog({ onCreated }: { onCreated: (id: string) => void 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> New Dashboard
-        </Button>
-      </DialogTrigger>
+      <Button onClick={() => setOpen(true)}>
+        <Plus className="mr-2 h-4 w-4" /> New Dashboard
+      </Button>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create Dashboard</DialogTitle>

@@ -6,8 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 
 const NAV_ITEMS = [
-  { href: '/overview', label: 'Overview' },
-  { href: '/dashboards', label: 'Dashboards' },
+  { href: '/overview', label: 'Dashboards' },
   { href: '/ingestion', label: 'Ingestion' },
   { href: '/alerts', label: 'Alerts' },
   { href: '/reports', label: 'Reports' },
@@ -48,7 +47,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               key={item.href}
               href={item.href}
               className={`rounded px-3 py-1.5 transition-colors hover:bg-accent hover:text-accent-foreground ${
-                pathname === item.href ? 'bg-accent text-accent-foreground font-medium' : 'text-muted-foreground'
+                pathname === item.href || (item.href === '/overview' && pathname.startsWith('/dashboards'))
+                  ? 'bg-accent text-accent-foreground font-medium'
+                  : 'text-muted-foreground'
               }`}
             >
               {item.label}
