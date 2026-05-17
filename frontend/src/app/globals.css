@@ -127,4 +127,15 @@
   html {
     @apply font-sans;
   }
+  button:not(:disabled),
+  a,
+  [role="button"],
+  select,
+  label[for],
+  summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
