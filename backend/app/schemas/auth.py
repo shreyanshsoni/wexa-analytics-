@@ -58,7 +58,8 @@ class InviteRequest(BaseSchema):
 
 
 class InviteAcceptRequest(BaseSchema):
-    full_name: str = Field(min_length=1, max_length=255)
+    # full_name only required for new users; ignored for existing accounts
+    full_name: str | None = Field(default=None, max_length=255)
     password: str = Field(min_length=8, max_length=128)
 
     @field_validator("password")
@@ -69,6 +70,15 @@ class InviteAcceptRequest(BaseSchema):
         if not any(c.isdigit() for c in v):
             raise ValueError("Password must contain at least one digit")
         return v
+
+
+class InviteInfoResponse(BaseSchema):
+    email: str
+    org_name: str
+    role: str
+    inviter_name: str
+    is_existing_user: bool
+    expires_at: datetime
 
 
 class InviteOut(BaseSchema):

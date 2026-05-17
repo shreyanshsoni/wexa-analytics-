@@ -142,7 +142,10 @@ async def login(
     )
     row = result.first()
     if not row:
-        raise AuthenticationError("No organization found for this account")
+        raise AuthenticationError(
+            "Your account is not part of any organization. "
+            "Please use an invitation link sent to your email to join one."
+        )
 
     membership, org = row
 
@@ -247,10 +250,45 @@ async def logout(session: AsyncSession, raw_refresh_token: str) -> None:
         await session.commit()
 
 
+async def get_invite_info(
+    session: AsyncSession,
+    invite_token: str,
+) -> dict[str, object]:
+    from sqlalchemy import select
+    result = await session.execute(
+        select(Invite).where(
+            Invite.token == invite_token,
+            Invite.accepted_at.is_(None),
+            Invite.deleted_at.is_(None),
+        )
+    )
+    invite = result.scalar_one_or_none()
+    if not invite:
+        raise NotFoundError("Invite", invite_token)
+
+    if invite.expires_at.replace(tzinfo=UTC) < datetime.now(UTC):
+        raise ValidationError("Invite has expired")
+
+    org = await session.get(Organization, invite.organization_id)
+    inviter = await session.get(User, invite.invited_by_id)
+
+    user_repo = UserRepository(session)
+    existing = await user_repo.get_by_email(invite.email)
+
+    return {
+        "email": invite.email,
+        "org_name": org.name if org else "",
+        "role": invite.role,
+        "inviter_name": inviter.full_name if inviter else "",
+        "is_existing_user": existing is not None,
+        "expires_at": invite.expires_at,
+    }
+
+
 async def accept_invite(
     session: AsyncSession,
     invite_token: str,
-    full_name: str,
+    full_name: str | None,
     password: str,
 ) -> AuthResult:
     from sqlalchemy import select
@@ -272,12 +310,17 @@ async def accept_invite(
     existing_user = await user_repo.get_by_email(invite.email)
 
     if existing_user:
+        # Verify their existing password — proves identity without a login session
+        if not verify_password(password, existing_user.hashed_password):
+            raise AuthenticationError("Incorrect password for existing account")
         user = existing_user
     else:
+        if not full_name or not full_name.strip():
+            raise ValidationError("Full name is required for new accounts")
         user = User(
             email=invite.email,
             hashed_password=hash_password(password),
-            full_name=full_name,
+            full_name=full_name.strip(),
             is_active=True,
             is_verified=True,
         )

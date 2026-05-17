@@ -5,6 +5,7 @@ from app.core.dependencies import CurrentUser, DbDep
 from app.schemas.auth import (
     AuthData,
     InviteAcceptRequest,
+    InviteInfoResponse,
     LoginRequest,
     OrgOut,
     SignupRequest,
@@ -107,6 +108,15 @@ async def logout(
         await auth_service.logout(db, raw_token)
     _clear_refresh_cookie(response)
     return ApiResponse(data=MessageResponse(message="Logged out successfully"))
+
+
+@router.get("/invite/{token}")
+async def get_invite_info(
+    token: str,
+    db: DbDep,
+) -> ApiResponse[InviteInfoResponse]:
+    info = await auth_service.get_invite_info(session=db, invite_token=token)
+    return ApiResponse(data=InviteInfoResponse(**info))  # type: ignore[arg-type]
 
 
 @router.post("/invite/{token}/accept", status_code=201)
