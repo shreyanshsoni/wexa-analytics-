@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.organization import Organization
 
 
 class Event(BaseModel):
@@ -28,4 +34,4 @@ class Event(BaseModel):
     )
     source: Mapped[str] = mapped_column(String(50), nullable=False, default="api")
 
-    organization: Mapped["Organization"] = relationship(back_populates="events")  # type: ignore[name-defined]
+    organization: Mapped[Organization] = relationship(back_populates="events")

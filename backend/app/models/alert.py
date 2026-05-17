@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -8,8 +11,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
 
+if TYPE_CHECKING:
+    from app.models.alert_history import AlertHistory
+    from app.models.organization import Organization
+    from app.models.saved_query import SavedQuery
 
-class AlertStatus(str, enum.Enum):
+
+class AlertStatus(enum.StrEnum):
     ACTIVE = "active"
     TRIGGERED = "triggered"
     RESOLVED = "resolved"
@@ -44,6 +52,8 @@ class Alert(BaseModel):
     )
     notification_channels: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)  # type: ignore[type-arg]
 
-    organization: Mapped["Organization"] = relationship(back_populates="alerts")  # type: ignore[name-defined]
-    saved_query: Mapped["SavedQuery"] = relationship(back_populates="alerts")  # type: ignore[name-defined]
-    history: Mapped[list["AlertHistory"]] = relationship(back_populates="alert", cascade="all, delete-orphan")  # type: ignore[name-defined]
+    organization: Mapped[Organization] = relationship(back_populates="alerts")
+    saved_query: Mapped[SavedQuery] = relationship(back_populates="alerts")
+    history: Mapped[list[AlertHistory]] = relationship(
+        back_populates="alert", cascade="all, delete-orphan"
+    )

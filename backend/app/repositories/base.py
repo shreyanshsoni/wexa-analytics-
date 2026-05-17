@@ -1,4 +1,5 @@
 import uuid
+from datetime import UTC, datetime
 from typing import Any, Generic, TypeVar
 
 from sqlalchemy import select
@@ -18,13 +19,13 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.execute(
             select(self.model).where(
                 self.model.id == record_id,
-                self.model.deleted_at.is_(None),  # type: ignore[union-attr]
+                self.model.deleted_at.is_(None),
             )
         )
         return result.scalar_one_or_none()
 
     async def list_all(self, **filters: Any) -> list[ModelType]:
-        query = select(self.model).where(self.model.deleted_at.is_(None))  # type: ignore[union-attr]
+        query = select(self.model).where(self.model.deleted_at.is_(None))
         for field, value in filters.items():
             query = query.where(getattr(self.model, field) == value)
         result = await self.session.execute(query)
@@ -45,6 +46,5 @@ class BaseRepository(Generic[ModelType]):
         return instance
 
     async def soft_delete(self, instance: ModelType) -> None:
-        from datetime import UTC, datetime
-        instance.deleted_at = datetime.now(UTC)  # type: ignore[assignment]
+        instance.deleted_at = datetime.now(UTC)
         await self.session.flush()

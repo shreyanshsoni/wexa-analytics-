@@ -1,10 +1,18 @@
+from __future__ import annotations
+
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.organization import Organization
+    from app.models.report import Report
+    from app.models.widget import Widget
 
 
 class Dashboard(BaseModel):
@@ -28,6 +36,8 @@ class Dashboard(BaseModel):
     refresh_interval: Mapped[int | None] = mapped_column(nullable=True, default=None)
     template_type: Mapped[str | None] = mapped_column(String(50), nullable=True, default=None)
 
-    organization: Mapped["Organization"] = relationship(back_populates="dashboards")  # type: ignore[name-defined]
-    widgets: Mapped[list["Widget"]] = relationship(back_populates="dashboard", cascade="all, delete-orphan")  # type: ignore[name-defined]
-    reports: Mapped[list["Report"]] = relationship(back_populates="dashboard")  # type: ignore[name-defined]
+    organization: Mapped[Organization] = relationship(back_populates="dashboards")
+    widgets: Mapped[list[Widget]] = relationship(
+        back_populates="dashboard", cascade="all, delete-orphan"
+    )
+    reports: Mapped[list[Report]] = relationship(back_populates="dashboard")

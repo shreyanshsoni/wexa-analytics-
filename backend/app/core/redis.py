@@ -1,22 +1,24 @@
+from typing import Any
+
 import certifi
 from redis.asyncio import Redis
 from redis.asyncio import from_url as redis_from_url
 
 from app.core.config import settings
 
-_redis_client: Redis | None = None  # type: ignore[type-arg]
+_redis_client: Redis | None = None
 
 
-async def get_redis() -> Redis:  # type: ignore[type-arg]
+async def get_redis() -> Redis:
     global _redis_client
     if _redis_client is None:
-        kwargs: dict = {
+        kwargs: dict[str, Any] = {
             "encoding": "utf-8",
             "decode_responses": True,
         }
         if settings.REDIS_URL.startswith("rediss://"):
             kwargs["ssl_ca_certs"] = certifi.where()
-        _redis_client = redis_from_url(settings.REDIS_URL, **kwargs)
+        _redis_client = redis_from_url(settings.REDIS_URL, **kwargs)  # type: ignore[no-untyped-call]
     return _redis_client
 
 

@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.organization import Organization
+    from app.models.user import User
 
 
 class ApiKey(BaseModel):
@@ -31,5 +38,5 @@ class ApiKey(BaseModel):
         DateTime(timezone=True), nullable=True, default=None
     )
 
-    organization: Mapped["Organization"] = relationship(back_populates="api_keys")  # type: ignore[name-defined]
-    created_by: Mapped["User"] = relationship(back_populates="api_keys")  # type: ignore[name-defined]
+    organization: Mapped[Organization] = relationship(back_populates="api_keys")
+    created_by: Mapped[User] = relationship(back_populates="api_keys")

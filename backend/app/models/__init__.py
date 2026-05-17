@@ -5,7 +5,7 @@ from app.models.base import Base, BaseModel
 from app.models.dashboard import Dashboard
 from app.models.event import Event
 from app.models.invite import Invite
-from app.models.membership import Membership, MemberRole
+from app.models.membership import MemberRole, Membership
 from app.models.organization import Organization
 from app.models.refresh_token import RefreshToken
 from app.models.report import Report

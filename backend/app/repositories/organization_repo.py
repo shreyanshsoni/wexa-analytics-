@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.membership import Membership, MemberRole
+from app.models.membership import Membership
 from app.models.organization import Organization
 from app.repositories.base import BaseRepository
 

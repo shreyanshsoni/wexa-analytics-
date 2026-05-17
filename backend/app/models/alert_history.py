@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.alert import Alert
 
 
 class AlertHistory(BaseModel):
@@ -24,4 +30,4 @@ class AlertHistory(BaseModel):
     triggered_value: Mapped[str | None] = mapped_column(String(255), nullable=True, default=None)
     status: Mapped[str] = mapped_column(String(50), nullable=False)
 
-    alert: Mapped["Alert"] = relationship(back_populates="history")  # type: ignore[name-defined]
+    alert: Mapped[Alert] = relationship(back_populates="history")

@@ -1,21 +1,21 @@
-class WexaException(Exception):
+class WexaError(Exception):
     def __init__(self, message: str, code: str) -> None:
         self.message = message
         self.code = code
         super().__init__(message)
 
 
-class AuthenticationError(WexaException):
+class AuthenticationError(WexaError):
     def __init__(self, message: str = "Authentication failed") -> None:
         super().__init__(message=message, code="AUTHENTICATION_ERROR")
 
 
-class AuthorizationError(WexaException):
+class AuthorizationError(WexaError):
     def __init__(self, message: str = "Insufficient permissions") -> None:
         super().__init__(message=message, code="AUTHORIZATION_ERROR")
 
 
-class NotFoundError(WexaException):
+class NotFoundError(WexaError):
     def __init__(self, resource: str, resource_id: str | int) -> None:
         super().__init__(
             message=f"{resource} with id '{resource_id}' not found",
@@ -23,22 +23,22 @@ class NotFoundError(WexaException):
         )
 
 
-class ConflictError(WexaException):
+class ConflictError(WexaError):
     def __init__(self, message: str) -> None:
         super().__init__(message=message, code="CONFLICT")
 
 
-class ValidationError(WexaException):
+class ValidationError(WexaError):
     def __init__(self, message: str) -> None:
         super().__init__(message=message, code="VALIDATION_ERROR")
 
 
-class RateLimitError(WexaException):
+class RateLimitError(WexaError):
     def __init__(self, message: str = "Rate limit exceeded") -> None:
         super().__init__(message=message, code="RATE_LIMIT_EXCEEDED")
 
 
-class ExternalServiceError(WexaException):
+class ExternalServiceError(WexaError):
     def __init__(self, service: str, message: str) -> None:
         super().__init__(
             message=f"{service} error: {message}",

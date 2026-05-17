@@ -1,10 +1,17 @@
+from __future__ import annotations
+
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.dashboard import Dashboard
+    from app.models.saved_query import SavedQuery
 
 
 class Widget(BaseModel):
@@ -30,5 +37,5 @@ class Widget(BaseModel):
     width: Mapped[int] = mapped_column(Integer, nullable=False, default=4)
     height: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
 
-    dashboard: Mapped["Dashboard"] = relationship(back_populates="widgets")  # type: ignore[name-defined]
-    saved_query: Mapped["SavedQuery"] = relationship(back_populates="widgets")  # type: ignore[name-defined]
+    dashboard: Mapped[Dashboard] = relationship(back_populates="widgets")
+    saved_query: Mapped[SavedQuery] = relationship(back_populates="widgets")

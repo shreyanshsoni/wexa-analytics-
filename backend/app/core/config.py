@@ -24,15 +24,14 @@ class Settings(BaseSettings):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def ASYNC_DATABASE_URL(self) -> str:
+    def async_database_url(self) -> str:
         url = self.DATABASE_URL
         if url.startswith("postgres://"):
             url = "postgresql+asyncpg://" + url[len("postgres://"):]
         elif url.startswith("postgresql://"):
             url = "postgresql+asyncpg://" + url[len("postgresql://"):]
-        # asyncpg uses ssl=require not sslmode=require
         url = url.replace("sslmode=require", "ssl=require")
         return url
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]

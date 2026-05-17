@@ -1,4 +1,5 @@
 import ssl
+from typing import Any
 
 import certifi
 from celery import Celery
@@ -16,7 +17,7 @@ celery_app = Celery(
     ],
 )
 
-_ssl_options: dict | None = (
+_ssl_options: dict[str, Any] | None = (
     {
         "ssl_cert_reqs": ssl.CERT_REQUIRED,
         "ssl_ca_certs": certifi.where(),

@@ -8,4 +8,4 @@ from app.core.database import get_db as _get_db
 from app.core.redis import get_redis as _get_redis
 
 DbDep = Annotated[AsyncSession, Depends(_get_db)]
-RedisDep = Annotated[Redis, Depends(_get_redis)]  # type: ignore[type-arg]
+RedisDep = Annotated[Redis, Depends(_get_redis)]

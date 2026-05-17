@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.dashboard import Dashboard
+    from app.models.organization import Organization
 
 
 class Report(BaseModel):
@@ -35,5 +42,5 @@ class Report(BaseModel):
     )
     email_recipients: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)  # type: ignore[type-arg]
 
-    organization: Mapped["Organization"] = relationship(back_populates="reports")  # type: ignore[name-defined]
-    dashboard: Mapped["Dashboard"] = relationship(back_populates="reports")  # type: ignore[name-defined]
+    organization: Mapped[Organization] = relationship(back_populates="reports")
+    dashboard: Mapped[Dashboard] = relationship(back_populates="reports")

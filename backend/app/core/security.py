@@ -29,7 +29,7 @@ def create_access_token(subject: str, extra_claims: dict[str, Any] | None = None
     }
     if extra_claims:
         payload.update(extra_claims)
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)  # type: ignore[no-any-return]
 
 
 def create_refresh_token(subject: str) -> str:
@@ -40,11 +40,11 @@ def create_refresh_token(subject: str) -> str:
         "iat": datetime.now(UTC),
         "type": "refresh",
     }
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)  # type: ignore[no-any-return]
 
 
 def decode_token(token: str) -> dict[str, Any]:
-    return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])  # type: ignore[no-any-return]
 
 
 def generate_api_key() -> tuple[str, str]:
