@@ -1,0 +1,57 @@
+'use client'
+
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import type { QueryResultPoint } from '@/types/api'
+
+interface Props {
+  data: QueryResultPoint[]
+  title: string
+}
+
+function formatBucket(bucket: string): string {
+  const d = new Date(bucket)
+  if (isNaN(d.getTime())) return bucket
+  return d.toLocaleTimeString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+export function LineChartWidget({ data, title }: Props) {
+  if (!data.length) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        No data for this period
+      </div>
+    )
+  }
+
+  const formatted = data.map((p) => ({ ...p, bucket: formatBucket(p.bucket) }))
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={formatted} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+        <XAxis dataKey="bucket" tick={{ fontSize: 11 }} tickLine={false} />
+        <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+        <Tooltip
+          contentStyle={{ fontSize: 12, borderRadius: 6 }}
+          formatter={(val: number) => [val.toLocaleString(), title]}
+        />
+        <Line
+          type="monotone"
+          dataKey="value"
+          stroke="hsl(var(--primary))"
+          strokeWidth={2}
+          dot={false}
+          activeDot={{ r: 4 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  )
+}

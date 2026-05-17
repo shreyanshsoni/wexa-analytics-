@@ -7,7 +7,7 @@
 ## Current Status
 ```
 Phase:        4 — Dashboards & Widgets
-Status:       NOT STARTED — Phase 3 complete, ready to start
+Status:       COMPLETE ✅ — Phase 5 (Alerts) is next
 Last Updated: 2026-05-17
 Last AI:      Claude (claude.ai code)
 ```
@@ -16,10 +16,10 @@ Last AI:      Claude (claude.ai code)
 
 ## Current Task
 ```
-Task:         Phase 3 kickoff — Data Ingestion
+Task:         Phase 5 — Alerts & Notifications
 File:         Not started yet
 Function:     N/A
-Next Action:  Implement ingestion_service.py, then api/v1/ingestion.py
+Next Action:  Implement alert models, alert_service.py, then api/v1/alerts.py
 ```
 
 ---
@@ -90,8 +90,22 @@ Next Action:  Implement ingestion_service.py, then api/v1/ingestion.py
 - [x] Frontend: ingestion page — API key management, CSV drag-and-drop upload, stats cards, quick-start snippet
 - [x] ruff ✅ 0 errors, mypy ✅ 0 errors, tsc ✅ 0 errors
 
-## Phase 4 — Dashboards & Widgets
-- [ ] NOT STARTED
+## Phase 4 — Dashboards & Widgets ✅ COMPLETE
+- [x] Backend: app/schemas/dashboard.py — full typed schemas (SavedQuery, Widget, Dashboard, QueryResult, Share)
+- [x] Backend: app/services/dashboard_service.py — execute_query (date_trunc SQL + Redis 5-min cache), full CRUD for SavedQuery/Dashboard/Widget, share_dashboard, _apply_template
+- [x] Backend: app/api/v1/dashboards.py — GET/POST/PUT/DELETE /dashboards, shared/{token} (no auth), POST /{id}/share
+- [x] Backend: app/api/v1/widgets.py — GET/POST/PUT/DELETE /widgets/{id}
+- [x] Backend: app/api/v1/saved_queries.py — full CRUD for /saved-queries
+- [x] Backend: app/api/router.py — dashboards, widgets, saved_queries routers registered
+- [x] Frontend: src/types/api.ts — fully updated with Dashboard, Widget, SavedQuery, QueryResult types
+- [x] Frontend: src/app/(dashboard)/settings/page.tsx — org rename, invite member, members list with RBAC
+- [x] Frontend: src/components/charts/ — LineChartWidget, BarChartWidget, PieChartWidget, KpiCardWidget, TableWidget
+- [x] Frontend: src/components/dashboard/WidgetCard.tsx — chart dispatch, edit/delete menu, cached badge
+- [x] Frontend: src/app/(dashboard)/overview/page.tsx — dashboard grid, create dialog with template picker
+- [x] Frontend: src/app/(dashboard)/dashboards/[id]/page.tsx — dnd-kit drag-drop, auto-refresh, share/fullscreen, WidgetEditorDialog
+- [x] Frontend: src/app/shared/[token]/page.tsx — public read-only dashboard view (no auth)
+- [x] ruff ✅ 0 errors, mypy ✅ 0 errors, tsc ✅ 0 errors
+- [x] Fixes: axios interceptor clearAuth(), CSV upload reset on success, base-ui asChild removed, TanStack Query v5 refetchInterval callback form
 
 ## Phase 5 — Alerts (Should Have)
 - [ ] NOT STARTED
@@ -161,16 +175,17 @@ When you start a new session:
 1. Read this file completely
 2. Read `00-master.md`
 3. Read `11-build-strategy.md`
-4. Read `06-security-auth.md` (domain file for Phase 2)
+4. Read relevant domain steering file for current task
 5. Answer verification questions
 6. Wait for user confirmation
-7. Start Phase 2 from the first unchecked item
+7. Start Phase 5 from the first unchecked item
 
 The next task to work on is:
 ```
-PHASE 3 — DATA INGESTION
-Read steering/04-data-models.md for event schema details
-Start with: backend/app/services/ingestion_service.py
-Then: backend/app/api/v1/ingestion.py
-Then: background Celery task for async ingestion
+PHASE 5 — ALERTS & NOTIFICATIONS
+Read steering/04-data-models.md for Alert model details
+Start with: backend/app/services/alert_service.py
+Then: backend/app/api/v1/alerts.py
+Then: Celery Beat periodic task to evaluate alert conditions
+Then: frontend alerts page
 ```

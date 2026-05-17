@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import { useAuthStore } from "@/store/authStore";
 
 const BASE = `${process.env.NEXT_PUBLIC_API_URL}/api/v1`;
 
@@ -39,7 +40,7 @@ api.interceptors.response.use(
         }
         return api(original);
       } catch {
-        localStorage.removeItem("access_token");
+        useAuthStore.getState().clearAuth();
         window.location.href = "/login";
       }
     }

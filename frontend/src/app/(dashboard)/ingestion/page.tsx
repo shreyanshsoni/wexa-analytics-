@@ -81,6 +81,7 @@ export default function IngestionPage() {
   // CSV upload
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const canManageKeys = role === 'owner' || role === 'admin'
   const canUploadCsv = role === 'owner' || role === 'admin' || role === 'analyst'
@@ -137,6 +138,8 @@ export default function IngestionPage() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['ingestion-stats'] })
       toast.success(result.message)
+      setSelectedFile(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     },
     onError: () => toast.error('CSV upload failed'),
   })
@@ -159,7 +162,12 @@ export default function IngestionPage() {
       toast.error('File exceeds 10 MB limit')
       return
     }
-    csvMutation.mutate(file)
+    setSelectedFile(file)
+  }
+
+  function handleUpload() {
+    if (!selectedFile) return
+    csvMutation.mutate(selectedFile)
   }
 
   function copyToClipboard(text: string) {
@@ -317,30 +325,76 @@ export default function IngestionPage() {
           <CardContent>
             <div
               className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 transition-colors ${
-                dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
-              } ${csvMutation.isPending ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                dragOver ? 'border-primary bg-primary/5' : selectedFile ? 'border-primary/50 bg-primary/5' : 'border-muted-foreground/25'
+              } ${csvMutation.isPending ? 'opacity-50 pointer-events-none' : !selectedFile ? 'cursor-pointer' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); if (!csvMutation.isPending) setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
               onDrop={(e) => {
                 e.preventDefault()
                 setDragOver(false)
-                handleFileSelect(e.dataTransfer.files[0] ?? null)
+                if (!csvMutation.isPending) handleFileSelect(e.dataTransfer.files[0] ?? null)
               }}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => { if (!selectedFile && !csvMutation.isPending) fileInputRef.current?.click() }}
             >
-              <Upload className="mb-3 h-8 w-8 text-muted-foreground" />
-              <p className="text-sm font-medium">
-                {csvMutation.isPending ? 'Uploading…' : 'Drop CSV here or click to browse'}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">Max 10 MB · .csv only</p>
+              <Upload className={`mb-3 h-8 w-8 ${selectedFile ? 'text-primary' : 'text-muted-foreground'}`} />
+              {selectedFile ? (
+                <>
+                  <p className="text-sm font-medium text-primary">{selectedFile.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {(selectedFile.size / 1024).toFixed(1)} KB · Click &quot;Upload&quot; below to send
+                  </p>
+                  <button
+                    className="mt-2 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedFile(null)
+                      if (fileInputRef.current) fileInputRef.current.value = ''
+                    }}
+                  >
+                    Remove
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium">
+                    Drop CSV here or click to browse
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">Max 10 MB · .csv only</p>
+                </>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".csv"
                 className="hidden"
-                onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
+                onChange={(e) => {
+                  handleFileSelect(e.target.files?.[0] ?? null)
+                  e.target.value = ''
+                }}
               />
             </div>
+
+            {selectedFile && (
+              <div className="mt-4 flex justify-end">
+                <Button
+                  onClick={handleUpload}
+                  disabled={csvMutation.isPending}
+                  className="min-w-28"
+                >
+                  {csvMutation.isPending ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading…
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
 
             {/* Quick reference */}
             <details className="mt-4">
