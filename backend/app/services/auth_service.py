@@ -179,7 +179,7 @@ async def login(
 async def refresh_access_token(
     session: AsyncSession,
     raw_refresh_token: str,
-) -> str:
+) -> tuple[str, str]:
     from sqlalchemy import select
     token_hash = _hash_token(raw_refresh_token)
     result = await session.execute(
@@ -232,7 +232,7 @@ async def refresh_access_token(
     session.add(new_token)
     await session.commit()
 
-    return access_token
+    return access_token, new_raw
 
 
 async def logout(session: AsyncSession, raw_refresh_token: str) -> None:
@@ -327,22 +327,40 @@ async def accept_invite(
         session.add(user)
         await session.flush()
 
-    existing_membership = await session.execute(
+    # Check for any active membership in any org — one account, one org policy
+    any_membership_result = await session.execute(
         select(Membership).where(
             Membership.user_id == user.id,
-            Membership.organization_id == invite.organization_id,
+            Membership.organization_id != invite.organization_id,
             Membership.deleted_at.is_(None),
         )
     )
-    if existing_membership.scalar_one_or_none():
-        raise ConflictError("User is already a member of this organization")
+    if any_membership_result.scalar_one_or_none():
+        raise ConflictError(
+            "This account already belongs to another organization. "
+            "Each account can only be a member of one organization."
+        )
 
-    membership = Membership(
-        user_id=user.id,
-        organization_id=invite.organization_id,
-        role=invite.role,
+    existing_membership_result = await session.execute(
+        select(Membership).where(
+            Membership.user_id == user.id,
+            Membership.organization_id == invite.organization_id,
+        )
     )
-    session.add(membership)
+    existing_mem = existing_membership_result.scalar_one_or_none()
+    if existing_mem:
+        if existing_mem.deleted_at is None:
+            raise ConflictError("User is already a member of this organization")
+        # Restore soft-deleted membership — INSERT would violate the unique constraint
+        existing_mem.deleted_at = None
+        existing_mem.role = invite.role
+    else:
+        membership = Membership(
+            user_id=user.id,
+            organization_id=invite.organization_id,
+            role=invite.role,
+        )
+        session.add(membership)
     invite.accepted_at = datetime.now(UTC)
     await session.flush()
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,10 +56,8 @@ export function WidgetCard({ widget, isEditMode, onEdit, onDelete }: Props) {
         </div>
         {isEditMode && (
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+            <DropdownMenuTrigger className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground">
+              <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit(widget)}>

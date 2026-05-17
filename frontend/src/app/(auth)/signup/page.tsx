@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import api from '@/lib/api'
+import publicApi from '@/lib/publicApi'
 import { useAuthStore } from '@/store/authStore'
 import type { ApiResponse, AuthData } from '@/types/api'
 
@@ -38,7 +38,7 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const { data: res } = await api.post<ApiResponse<AuthData>>('/auth/signup', form)
+      const { data: res } = await publicApi.post<ApiResponse<AuthData>>('/auth/signup', form)
       setAuth(res.data.user, res.data.org, res.data.role, res.data.access_token)
       router.push('/overview')
     } catch (err: unknown) {

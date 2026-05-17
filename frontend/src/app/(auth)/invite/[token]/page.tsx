@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import api from '@/lib/api'
+import publicApi from '@/lib/publicApi'
 import { useAuthStore } from '@/store/authStore'
 import type { ApiResponse, AuthData } from '@/types/api'
 
@@ -38,7 +38,7 @@ export default function InvitePage() {
   useEffect(() => {
     async function fetchInfo() {
       try {
-        const { data: res } = await api.get<ApiResponse<InviteInfo>>(`/auth/invite/${token}`)
+        const { data: res } = await publicApi.get<ApiResponse<InviteInfo>>(`/auth/invite/${token}`)
         setInviteInfo(res.data)
       } catch (err: unknown) {
         const msg =
@@ -61,7 +61,7 @@ export default function InvitePage() {
       if (!inviteInfo.is_existing_user) {
         body.full_name = fullName
       }
-      const { data: res } = await api.post<ApiResponse<AuthData>>(
+      const { data: res } = await publicApi.post<ApiResponse<AuthData>>(
         `/auth/invite/${token}/accept`,
         body,
       )
@@ -69,9 +69,12 @@ export default function InvitePage() {
       toast.success(`Welcome to ${res.data.org.name}!`)
       router.push('/overview')
     } catch (err: unknown) {
+      const errData = (err as { response?: { data?: unknown } })?.response?.data
+      // Handle both our envelope format and FastAPI's default validation format
       const msg =
-        (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
-          ?.message ?? 'Failed to accept invite'
+        (errData as { error?: { message?: string } })?.error?.message ??
+        ((errData as { detail?: { msg?: string }[] })?.detail?.[0]?.msg) ??
+        'Failed to accept invite'
       toast.error(msg)
     } finally {
       setSubmitting(false)

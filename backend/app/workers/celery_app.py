@@ -26,6 +26,15 @@ _ssl_options: dict[str, Any] | None = (
     else None
 )
 
+_redis_transport_opts: dict[str, Any] = {
+    "visibility_timeout": 3600,
+    "socket_timeout": 30,
+    "socket_connect_timeout": 10,
+    "socket_keepalive": True,
+    "retry_on_timeout": True,
+    "health_check_interval": 30,
+}
+
 celery_app.conf.update(
     task_serializer="json",
     accept_content=["json"],
@@ -34,7 +43,8 @@ celery_app.conf.update(
     enable_utc=True,
     task_track_started=True,
     broker_connection_retry_on_startup=True,
-    broker_transport_options={"visibility_timeout": 3600},
+    broker_transport_options=_redis_transport_opts,
+    redis_backend_transport_options=_redis_transport_opts,
     broker_use_ssl=_ssl_options,
     redis_backend_use_ssl=_ssl_options,
 )

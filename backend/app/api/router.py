@@ -1,6 +1,15 @@
 from fastapi import APIRouter
 
-from app.api.v1 import api_keys, auth, dashboards, health, ingestion, organizations, saved_queries, widgets
+from app.api.v1 import (
+    api_keys,
+    auth,
+    dashboards,
+    health,
+    ingestion,
+    organizations,
+    saved_queries,
+    widgets,
+)
 
 api_router = APIRouter()
 

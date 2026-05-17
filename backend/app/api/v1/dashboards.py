@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter
 
 from app.core.config import settings
-from app.core.dependencies import CurrentUser, DbDep, RedisDep
+from app.core.dependencies import DbDep, RedisDep, RequireAdmin, RequireAnalyst, RequireMember
 from app.models.widget import Widget
 from app.schemas.common import ApiResponse
 from app.schemas.dashboard import (
@@ -93,22 +93,9 @@ async def _build_dashboard_response(
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
 @router.get("", response_model=ApiResponse[list[DashboardListItem]])
-async def list_dashboards(user: CurrentUser, db: DbDep, redis: RedisDep) -> Any:
-    from sqlalchemy import select as sa_select
-
-    from app.models.membership import Membership
-    result = await db.execute(
-        sa_select(Membership).where(
-            Membership.user_id == user.id,
-            Membership.deleted_at.is_(None),
-        )
-    )
-    membership = result.scalar_one_or_none()
-    if not membership:
-        return ApiResponse(data=[])
-    org_id = membership.organization_id
-
-    pairs = await dashboard_service.list_dashboards(db, org_id)
+async def list_dashboards(ctx: RequireMember, db: DbDep) -> Any:
+    _, org, _ = ctx
+    pairs = await dashboard_service.list_dashboards(db, org.id)
     items = [
         DashboardListItem(
             id=d.id,
@@ -116,8 +103,8 @@ async def list_dashboards(user: CurrentUser, db: DbDep, redis: RedisDep) -> Any:
             updated_at=d.updated_at,
             name=d.name,
             description=d.description,
-            widget_count=count,
             is_public=d.is_public,
+            widget_count=count,
             auto_refresh_interval=_refresh_label(d.refresh_interval),
         )
         for d, count in pairs
@@ -128,34 +115,19 @@ async def list_dashboards(user: CurrentUser, db: DbDep, redis: RedisDep) -> Any:
 @router.post("", response_model=ApiResponse[DashboardResponse], status_code=201)
 async def create_dashboard(
     body: DashboardCreateRequest,
-    user: CurrentUser,
+    ctx: RequireAnalyst,
     db: DbDep,
     redis: RedisDep,
 ) -> Any:
+    user, org, _ = ctx
     from sqlalchemy import select as sa_select
-
-    from app.models.membership import Membership
-    result = await db.execute(
-        sa_select(Membership).where(
-            Membership.user_id == user.id,
-            Membership.deleted_at.is_(None),
-        )
-    )
-    membership = result.scalar_one_or_none()
-    if not membership:
-        from app.core.exceptions import AuthorizationError
-        raise AuthorizationError("No organization membership found")
-    org_id = membership.organization_id
-
     from sqlalchemy.orm import selectinload as sli
-    dashboard = await dashboard_service.create_dashboard(db, org_id, user.id, body)
-    # Reload with widgets
-    from sqlalchemy import select as sa_select2
-    result2 = await db.execute(
-        sa_select2(type(dashboard)).where(type(dashboard).id == dashboard.id).options(sli(type(dashboard).widgets))
+    dashboard = await dashboard_service.create_dashboard(db, org.id, user.id, body)
+    result = await db.execute(
+        sa_select(type(dashboard)).where(type(dashboard).id == dashboard.id).options(sli(type(dashboard).widgets))
     )
-    dashboard = result2.scalar_one()
-    data = await _build_dashboard_response(dashboard, org_id, db, redis)
+    dashboard = result.scalar_one()
+    data = await _build_dashboard_response(dashboard, org.id, db, redis)
     return ApiResponse(data=data)
 
 
@@ -173,27 +145,13 @@ async def get_shared_dashboard(
 @router.get("/{dashboard_id}", response_model=ApiResponse[DashboardResponse])
 async def get_dashboard(
     dashboard_id: uuid.UUID,
-    user: CurrentUser,
+    ctx: RequireMember,
     db: DbDep,
     redis: RedisDep,
 ) -> Any:
-    from sqlalchemy import select as sa_select
-
-    from app.models.membership import Membership
-    result = await db.execute(
-        sa_select(Membership).where(
-            Membership.user_id == user.id,
-            Membership.deleted_at.is_(None),
-        )
-    )
-    membership = result.scalar_one_or_none()
-    if not membership:
-        from app.core.exceptions import AuthorizationError
-        raise AuthorizationError("No organization membership found")
-    org_id = membership.organization_id
-
-    dashboard = await dashboard_service.get_dashboard(db, org_id, dashboard_id, redis)
-    data = await _build_dashboard_response(dashboard, org_id, db, redis)
+    _, org, _ = ctx
+    dashboard = await dashboard_service.get_dashboard(db, org.id, dashboard_id, redis)
+    data = await _build_dashboard_response(dashboard, org.id, db, redis)
     return ApiResponse(data=data)
 
 
@@ -201,76 +159,35 @@ async def get_dashboard(
 async def update_dashboard(
     dashboard_id: uuid.UUID,
     body: DashboardUpdateRequest,
-    user: CurrentUser,
+    ctx: RequireAnalyst,
     db: DbDep,
     redis: RedisDep,
 ) -> Any:
-    from sqlalchemy import select as sa_select
-
-    from app.models.membership import Membership
-    result = await db.execute(
-        sa_select(Membership).where(
-            Membership.user_id == user.id,
-            Membership.deleted_at.is_(None),
-        )
-    )
-    membership = result.scalar_one_or_none()
-    org_id = membership.organization_id if membership else None
-    if not org_id:
-        from app.core.exceptions import AuthorizationError
-        raise AuthorizationError("No organization membership found")
-
-    dashboard = await dashboard_service.update_dashboard(db, org_id, dashboard_id, body)
-    data = await _build_dashboard_response(dashboard, org_id, db, redis)
+    _, org, _ = ctx
+    dashboard = await dashboard_service.update_dashboard(db, org.id, dashboard_id, body)
+    data = await _build_dashboard_response(dashboard, org.id, db, redis)
     return ApiResponse(data=data)
 
 
 @router.delete("/{dashboard_id}", status_code=204)
 async def delete_dashboard(
     dashboard_id: uuid.UUID,
-    user: CurrentUser,
+    ctx: RequireAdmin,
     db: DbDep,
 ) -> None:
-    from sqlalchemy import select as sa_select
-
-    from app.models.membership import Membership
-    result = await db.execute(
-        sa_select(Membership).where(
-            Membership.user_id == user.id,
-            Membership.deleted_at.is_(None),
-        )
-    )
-    membership = result.scalar_one_or_none()
-    org_id = membership.organization_id if membership else None
-    if not org_id:
-        from app.core.exceptions import AuthorizationError
-        raise AuthorizationError("No organization membership found")
-    await dashboard_service.delete_dashboard(db, org_id, dashboard_id)
+    _, org, _ = ctx
+    await dashboard_service.delete_dashboard(db, org.id, dashboard_id)
 
 
 @router.post("/{dashboard_id}/share", response_model=ApiResponse[ShareResponse])
 async def share_dashboard(
     dashboard_id: uuid.UUID,
     body: DashboardShareRequest,
-    user: CurrentUser,
+    ctx: RequireAnalyst,
     db: DbDep,
 ) -> Any:
-    from sqlalchemy import select as sa_select
-
-    from app.models.membership import Membership
-    result = await db.execute(
-        sa_select(Membership).where(
-            Membership.user_id == user.id,
-            Membership.deleted_at.is_(None),
-        )
+    _, org, _ = ctx
+    share_url, token = await dashboard_service.share_dashboard(
+        db, org.id, dashboard_id, body.is_public, settings.FRONTEND_URL
     )
-    membership = result.scalar_one_or_none()
-    org_id = membership.organization_id if membership else None
-    if not org_id:
-        from app.core.exceptions import AuthorizationError
-        raise AuthorizationError("No organization membership found")
-
-    share_url, share_token = await dashboard_service.share_dashboard(
-        db, org_id, dashboard_id, body.enabled, settings.FRONTEND_URL
-    )
-    return ApiResponse(data=ShareResponse(share_url=share_url or "", share_token=share_token))
+    return ApiResponse(data=ShareResponse(is_public=body.is_public, share_token=token, share_url=share_url))

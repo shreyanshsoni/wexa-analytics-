@@ -92,7 +92,8 @@ async def refresh(
     if not raw_token:
         from app.core.exceptions import AuthenticationError
         raise AuthenticationError("No refresh token cookie")
-    new_access = await auth_service.refresh_access_token(db, raw_token)
+    new_access, new_raw = await auth_service.refresh_access_token(db, raw_token)
+    _set_refresh_cookie(response, new_raw)
     return ApiResponse(data=TokenData(access_token=new_access))
 
 

@@ -18,6 +18,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Single in-flight refresh promise — prevents concurrent 401s from each triggering
+// their own refresh, which would rotate the cookie multiple times and leave all but
+// the first with a revoked token, causing an immediate logout.
+let refreshing: Promise<string> | null = null;
+
 // On 401: silently refresh the access token using the HTTP-only cookie, then retry once.
 // If refresh also fails (cookie expired/revoked), redirect to login.
 api.interceptors.response.use(
@@ -27,21 +32,33 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !original?._retry) {
       original._retry = true;
+
+      if (!refreshing) {
+        refreshing = axios
+          .post(`${BASE}/auth/refresh`, {}, { withCredentials: true })
+          .then(({ data }) => {
+            const newToken: string = data.data.access_token;
+            localStorage.setItem("access_token", newToken);
+            return newToken;
+          })
+          .catch((err) => {
+            useAuthStore.getState().clearAuth();
+            window.location.href = "/login";
+            throw err;
+          })
+          .finally(() => {
+            refreshing = null;
+          });
+      }
+
       try {
-        const { data } = await axios.post(
-          `${BASE}/auth/refresh`,
-          {},
-          { withCredentials: true },
-        );
-        const newToken: string = data.data.access_token;
-        localStorage.setItem("access_token", newToken);
+        const newToken = await refreshing;
         if (original.headers) {
           original.headers.Authorization = `Bearer ${newToken}`;
         }
         return api(original);
       } catch {
-        useAuthStore.getState().clearAuth();
-        window.location.href = "/login";
+        return Promise.reject(error);
       }
     }
 

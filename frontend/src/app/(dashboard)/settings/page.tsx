@@ -20,8 +20,9 @@ async function fetchOrgMe(): Promise<OrgMe> {
   return res.data
 }
 
-async function updateOrgName(name: string): Promise<void> {
-  await api.put('/organizations/me', { name })
+async function updateOrgName(name: string): Promise<{ name: string; slug: string }> {
+  const { data: res } = await api.put<ApiResponse<{ id: string; name: string; slug: string }>>('/organizations/me', { name })
+  return res.data
 }
 
 async function inviteMember(payload: { email: string; role: string }): Promise<void> {
@@ -30,6 +31,10 @@ async function inviteMember(payload: { email: string; role: string }): Promise<v
 
 async function removeMember(memberId: string): Promise<void> {
   await api.delete(`/organizations/members/${memberId}`)
+}
+
+async function changeMemberRole(memberId: string, role: string): Promise<void> {
+  await api.put(`/organizations/members/${memberId}/role`, { role })
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -48,7 +53,7 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 export default function SettingsPage() {
-  const { role: myRole, user } = useAuthStore()
+  const { role: myRole, user, updateOrganization } = useAuthStore()
   const queryClient = useQueryClient()
 
   const [orgName, setOrgName] = useState('')
@@ -68,7 +73,8 @@ export default function SettingsPage() {
 
   const renameMutation = useMutation({
     mutationFn: updateOrgName,
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      updateOrganization({ name: updated.name, slug: updated.slug })
       queryClient.invalidateQueries({ queryKey: ['org-me'] })
       toast.success('Organization name updated')
     },
@@ -96,6 +102,20 @@ export default function SettingsPage() {
       toast.success('Member removed')
     },
     onError: () => toast.error('Failed to remove member'),
+  })
+
+  const changeRoleMutation = useMutation({
+    mutationFn: ({ memberId, role }: { memberId: string; role: string }) =>
+      changeMemberRole(memberId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['org-me'] })
+      toast.success('Role updated')
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: { message?: string } } } })
+        ?.response?.data?.error?.message
+      toast.error(msg ?? 'Failed to update role')
+    },
   })
 
   function handleRename(e: React.FormEvent) {
@@ -211,29 +231,57 @@ export default function SettingsPage() {
             </div>
           ) : (
             <div className="divide-y rounded-md border">
-              {orgData?.members.map((member: Member) => (
-                <div key={member.id} className="flex items-center justify-between p-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{member.user.full_name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{member.user.email}</p>
+              {orgData?.members.map((member: Member) => {
+                const isOwner = member.role === 'owner'
+                const isSelf = member.user.id === user?.id
+                const canEdit = canManage && !isOwner && !isSelf
+                return (
+                  <div key={member.id} className="flex items-center justify-between p-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {member.user.full_name}
+                        {isSelf && <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{member.user.email}</p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      {canEdit ? (
+                        <Select
+                          key={member.id + member.role}
+                          value={member.role}
+                          onValueChange={(newRole) =>
+                            newRole && changeRoleMutation.mutate({ memberId: member.id, role: newRole })
+                          }
+                          disabled={changeRoleMutation.isPending}
+                        >
+                          <SelectTrigger className="h-7 w-28 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Admin</SelectItem>
+                            <SelectItem value="analyst">Analyst</SelectItem>
+                            <SelectItem value="viewer">Viewer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <RoleBadge role={member.role} />
+                      )}
+                      {canEdit && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Remove member"
+                          disabled={removeMutation.isPending}
+                          onClick={() => removeMutation.mutate(member.id)}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 ml-4">
-                    <RoleBadge role={member.role} />
-                    {canManage && member.role !== 'owner' && member.user.id !== user?.id && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        title="Remove member"
-                        disabled={removeMutation.isPending}
-                        onClick={() => removeMutation.mutate(member.id)}
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </CardContent>

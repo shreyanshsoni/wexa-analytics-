@@ -16,7 +16,7 @@ const NAV_ITEMS = [
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
-  const { isAuthenticated, _hasHydrated, user, organization, clearAuth } = useAuthStore()
+  const { isAuthenticated, _hasHydrated, user, organization, role, clearAuth } = useAuthStore()
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -39,6 +39,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="text-xl font-bold">Wexa Analytics</span>
           {organization && (
             <p className="mt-1 truncate text-xs text-muted-foreground">{organization.name}</p>
+          )}
+          {role && (
+            <span className="mt-1 inline-block rounded-full bg-muted px-2 py-0.5 text-xs capitalize text-muted-foreground">
+              {role}
+            </span>
           )}
         </div>
         <nav className="flex flex-col gap-1 px-2 text-sm">

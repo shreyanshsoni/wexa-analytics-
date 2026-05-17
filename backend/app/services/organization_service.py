@@ -101,6 +101,19 @@ async def invite_member(
         if already_member.scalar_one_or_none():
             raise ConflictError("This user is already a member of the organization")
 
+        # One account, one org — block invite if user is active in another org
+        other_org = await session.execute(
+            select(Membership).where(
+                Membership.user_id == existing_user.id,
+                Membership.organization_id != org_id,
+                Membership.deleted_at.is_(None),
+            )
+        )
+        if other_org.scalar_one_or_none():
+            raise ConflictError(
+                "This user already belongs to another organization and cannot be invited."
+            )
+
     invite = Invite(
         organization_id=org_id,
         invited_by_id=invited_by_id,
