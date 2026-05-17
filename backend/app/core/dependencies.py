@@ -2,7 +2,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import Depends, Header
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,11 +20,17 @@ from app.repositories.user_repo import UserRepository
 DbDep = Annotated[AsyncSession, Depends(_get_db)]
 RedisDep = Annotated[Redis, Depends(_get_redis)]
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+_http_bearer = HTTPBearer(auto_error=False)
+
+
+async def _extract_token(
+    bearer: Annotated[HTTPAuthorizationCredentials | None, Depends(_http_bearer)],
+) -> str | None:
+    return bearer.credentials if bearer else None
 
 
 async def get_current_user(
-    token: Annotated[str | None, Depends(oauth2_scheme)],
+    token: Annotated[str | None, Depends(_extract_token)],
     db: DbDep,
 ) -> User:
     if not token:
@@ -55,7 +61,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 async def _get_current_org_context(
     current_user: CurrentUser,
-    token: Annotated[str | None, Depends(oauth2_scheme)],
+    token: Annotated[str | None, Depends(_extract_token)],
     db: DbDep,
 ) -> tuple[User, Organization, Membership]:
     if not token:

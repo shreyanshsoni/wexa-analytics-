@@ -7,7 +7,7 @@
 ## Current Status
 ```
 Phase:        3 — Data Ingestion
-Status:       NOT STARTED
+Status:       NOT STARTED — Phase 2 polished and committed, ready to start
 Last Updated: 2026-05-17
 Last AI:      Claude (claude.ai code)
 ```
@@ -53,7 +53,7 @@ Next Action:  Implement ingestion_service.py, then api/v1/ingestion.py
 - [x] alembic history shows initial migration (a4bfc2bf69b6)
 - [x] All 15 DB tables created in Neon
 
-## Phase 2 — Authentication & Multi-Tenancy ✅ COMPLETE
+## Phase 2 — Authentication & Multi-Tenancy ✅ COMPLETE + POLISHED
 - [x] Backend: auth_service.py (signup, login, refresh, logout, accept_invite)
 - [x] Backend: organization_service.py (get org, members, invite, remove, update role)
 - [x] Backend: api_key_service.py + api_key_repo.py (create, list, revoke, rotate)
@@ -68,6 +68,18 @@ Next Action:  Implement ingestion_service.py, then api/v1/ingestion.py
 - [x] Frontend: invite accept page /invite/[token]
 - [x] Frontend: dashboard layout with auth guard (redirects to /login if not authenticated)
 - [x] ruff ✅ 0 errors, mypy ✅ 0 errors (62 files), pytest ✅ 5/5, tsc ✅, eslint ✅
+- [x] **Phase 2 comprehensive tests: 62/62 PASSED** (test files removed after passing)
+- [x] bcrypt/passlib compatibility fixed (direct bcrypt usage, no passlib wrapper)
+- [x] alembic env.py fixed (async_database_url attribute rename)
+- [x] api_key key_prefix column increased VARCHAR(10→16), migration 5268e0893e5f applied
+- [x] All Phase 2 test files removed: test_auth.py, test_organizations.py, test_api_keys.py, test_rbac.py
+- [x] Frontend: Inter font applied globally (replaces Geist)
+- [x] Frontend: Password eye toggle on login, signup, and invite pages
+- [x] Frontend: Auth persistence fixed (_hasHydrated + partialize in Zustand persist)
+- [x] Frontend: Placeholder pages for all nav routes (dashboards, ingestion, alerts, reports, settings)
+- [x] Frontend: Root / redirects to /overview if authenticated, /login if not
+- [x] Frontend: Login + signup redirect to /overview if already authenticated
+- [x] Git: Fixed broken frontend submodule — frontend now tracked as regular files
 
 ## Phase 3 — Data Ingestion
 - [ ] NOT STARTED
@@ -150,9 +162,9 @@ When you start a new session:
 
 The next task to work on is:
 ```
-PHASE 2 — AUTH & MULTI-TENANCY
-Start with: backend/app/services/auth_service.py
-Then: backend/app/api/v1/auth.py
-Then: backend/app/core/dependencies.py (add get_current_user)
-Then: frontend login/signup pages
+PHASE 3 — DATA INGESTION
+Read steering/04-data-models.md for event schema details
+Start with: backend/app/services/ingestion_service.py
+Then: backend/app/api/v1/ingestion.py
+Then: background Celery task for async ingestion
 ```

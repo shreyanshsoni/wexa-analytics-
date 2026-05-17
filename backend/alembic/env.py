@@ -31,7 +31,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 def run_migrations_offline() -> None:
     context.configure(
-        url=settings.ASYNC_DATABASE_URL,
+        url=settings.async_database_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -41,7 +41,7 @@ def run_migrations_offline() -> None:
 
 
 async def run_async_migrations() -> None:
-    engine = create_async_engine(settings.ASYNC_DATABASE_URL)
+    engine = create_async_engine(settings.async_database_url)
     async with engine.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await engine.dispose()
