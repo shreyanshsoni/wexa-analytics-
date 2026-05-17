@@ -56,7 +56,6 @@ async def revoke_api_key(
     if key.organization_id != org_id:
         raise AuthorizationError("API key does not belong to this organization")
     key.is_active = False
-    key.deleted_at = datetime.now(UTC)
     await session.commit()
 
 

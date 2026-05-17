@@ -121,8 +121,8 @@ RequireMember = Annotated[
 
 
 async def get_org_by_api_key(
+    db: DbDep,
     x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
-    db: DbDep = Depends(_get_db),
 ) -> tuple[uuid.UUID, uuid.UUID]:
     if not x_api_key:
         raise AuthenticationError("X-API-Key header required")
