@@ -4,6 +4,7 @@ from typing import Any
 
 import structlog
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -62,4 +63,12 @@ def setup_middleware(app: FastAPI) -> None:
         return JSONResponse(
             status_code=_exception_to_status(exc),
             content={"error": {"code": exc.code, "message": exc.message}},
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+        logger.warning("validation_error", errors=exc.errors())
+        return JSONResponse(
+            status_code=422,
+            content={"error": {"code": "VALIDATION_ERROR", "message": str(exc.errors()[0]["msg"])}},
         )
