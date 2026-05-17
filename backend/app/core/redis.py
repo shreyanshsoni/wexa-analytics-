@@ -1,3 +1,4 @@
+import certifi
 from redis.asyncio import Redis
 from redis.asyncio import from_url as redis_from_url
 
@@ -9,12 +10,13 @@ _redis_client: Redis | None = None  # type: ignore[type-arg]
 async def get_redis() -> Redis:  # type: ignore[type-arg]
     global _redis_client
     if _redis_client is None:
-        _redis_client = redis_from_url(
-            settings.REDIS_URL,
-            encoding="utf-8",
-            decode_responses=True,
-            ssl_cert_reqs=None,  # Upstash uses self-signed cert on some envs
-        )
+        kwargs: dict = {
+            "encoding": "utf-8",
+            "decode_responses": True,
+        }
+        if settings.REDIS_URL.startswith("rediss://"):
+            kwargs["ssl_ca_certs"] = certifi.where()
+        _redis_client = redis_from_url(settings.REDIS_URL, **kwargs)
     return _redis_client
 
 
