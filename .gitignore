@@ -25,9 +25,8 @@ htmlcov/
 .coverage
 coverage.xml
 
-# Alembic
-backend/alembic/versions/*.py
-!backend/alembic/versions/.gitkeep
+# Alembic — track migration files (Railway needs them to run on deploy)
+backend/alembic/versions/__pycache__/
 
 # Node
 node_modules/
