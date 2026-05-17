@@ -117,8 +117,8 @@ async def execute_query(
         for row in rows
     ]
 
-    # Cache result
-    if redis and points:
+    # Cache result (including empty results to avoid repeated DB hits)
+    if redis:
         try:
             payload = [{"bucket": p.bucket, "value": p.value} for p in points]
             await redis.setex(cache_key, _CACHE_TTL, json.dumps(payload))
