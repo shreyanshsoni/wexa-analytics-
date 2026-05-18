@@ -26,6 +26,7 @@ dependencies = [
     "slowapi>=0.1.9",
     "python-multipart>=0.0.17",
     "aiofiles>=24.1.0",
+    "prometheus-fastapi-instrumentator>=7.1.0",
 ]
 
 [project.optional-dependencies]

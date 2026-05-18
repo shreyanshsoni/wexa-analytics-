@@ -188,6 +188,6 @@ async def share_dashboard(
 ) -> Any:
     _, org, _ = ctx
     share_url, token = await dashboard_service.share_dashboard(
-        db, org.id, dashboard_id, body.is_public, settings.FRONTEND_URL
+        db, org.id, dashboard_id, body.enabled, settings.FRONTEND_URL
     )
-    return ApiResponse(data=ShareResponse(is_public=body.is_public, share_token=token, share_url=share_url))
+    return ApiResponse(data=ShareResponse(share_token=token, share_url=share_url))

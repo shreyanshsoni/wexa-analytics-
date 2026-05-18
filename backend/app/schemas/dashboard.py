@@ -158,5 +158,5 @@ class DashboardResponse(BaseResponse):
 
 
 class ShareResponse(BaseSchema):
-    share_url: str
+    share_url: str | None
     share_token: str | None

@@ -490,7 +490,7 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
     <div ref={fullscreenRef} className={`space-y-4 ${isFullscreen ? 'bg-background p-6' : ''}`}>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={() => router.push('/overview')}>
+        <Button variant="ghost" size="icon" onClick={() => router.push('/dashboards')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1 min-w-0">

@@ -9,7 +9,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.exceptions import AuthorizationError, NotFoundError
+from app.core.exceptions import NotFoundError
 from app.models.dashboard import Dashboard
 from app.models.event import Event
 from app.models.saved_query import SavedQuery
@@ -244,10 +244,8 @@ async def get_dashboard(
         .options(selectinload(Dashboard.widgets))
     )
     dashboard = result.scalar_one_or_none()
-    if not dashboard:
+    if not dashboard or dashboard.organization_id != org_id:
         raise NotFoundError("Dashboard", str(dashboard_id))
-    if dashboard.organization_id != org_id:
-        raise AuthorizationError("Access denied")
     return dashboard
 
 
@@ -393,10 +391,8 @@ async def get_widget(
         .options(selectinload(Widget.dashboard))
     )
     widget = result.scalar_one_or_none()
-    if not widget:
+    if not widget or widget.dashboard.organization_id != org_id:
         raise NotFoundError("Widget", str(widget_id))
-    if widget.dashboard.organization_id != org_id:
-        raise AuthorizationError("Access denied")
     return widget
 
 

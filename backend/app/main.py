@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.router import api_router
 from app.core.config import settings
@@ -31,3 +32,10 @@ app = FastAPI(
 
 setup_middleware(app)
 app.include_router(api_router, prefix="/api/v1")
+
+# Expose Prometheus metrics at GET /metrics
+# Tracks: request count, latency histograms, in-progress requests — per route + status code
+Instrumentator(
+    should_group_status_codes=False,
+    excluded_handlers=["/metrics"],  # don't track scrapes of /metrics itself
+).instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
