@@ -8,7 +8,7 @@
 ```
 Phase:        4 — Dashboards & Widgets
 Status:       COMPLETE ✅ — Phase 5 (Alerts) is next
-Last Updated: 2026-05-17
+Last Updated: 2026-05-18
 Last AI:      Claude (claude.ai code)
 ```
 
@@ -95,17 +95,23 @@ Next Action:  Implement alert models, alert_service.py, then api/v1/alerts.py
 - [x] Backend: app/services/dashboard_service.py — execute_query (date_trunc SQL + Redis 5-min cache), full CRUD for SavedQuery/Dashboard/Widget, share_dashboard, _apply_template
 - [x] Backend: app/api/v1/dashboards.py — GET/POST/PUT/DELETE /dashboards, shared/{token} (no auth), POST /{id}/share
 - [x] Backend: app/api/v1/widgets.py — GET/POST/PUT/DELETE /widgets/{id}
-- [x] Backend: app/api/v1/saved_queries.py — full CRUD for /saved-queries
+- [x] Backend: app/api/v1/saved_queries.py — full CRUD for /saved-queries; RBAC fixed (RequireMember reads, RequireAnalyst writes)
 - [x] Backend: app/api/router.py — dashboards, widgets, saved_queries routers registered
+- [x] Backend: Prometheus metrics at GET /metrics — prometheus-fastapi-instrumentator v7.1.0, excludes /metrics self-tracking
+- [x] Backend: scripts/seed.py — full demo seed: 4 users (Owner/Admin/Analyst/Viewer), 2500 events over 30 days, 8 saved queries, 4 dashboards; `make seed`
+- [x] Backend: Security fix — get_dashboard + get_widget return 404 (not 403) for cross-org to prevent ID enumeration
+- [x] Backend: Share fix — body.is_public → body.enabled, ShareResponse.share_url → str | None
 - [x] Frontend: src/types/api.ts — fully updated with Dashboard, Widget, SavedQuery, QueryResult types
 - [x] Frontend: src/app/(dashboard)/settings/page.tsx — org rename, invite member, members list with RBAC
 - [x] Frontend: src/components/charts/ — LineChartWidget, BarChartWidget, PieChartWidget, KpiCardWidget, TableWidget
 - [x] Frontend: src/components/dashboard/WidgetCard.tsx — chart dispatch, edit/delete menu, cached badge
-- [x] Frontend: src/app/(dashboard)/overview/page.tsx — dashboard grid, create dialog with template picker
+- [x] Frontend: /dashboards route is the primary dashboard list (was /overview); /overview redirects
 - [x] Frontend: src/app/(dashboard)/dashboards/[id]/page.tsx — dnd-kit drag-drop, auto-refresh, share/fullscreen, WidgetEditorDialog
 - [x] Frontend: src/app/shared/[token]/page.tsx — public read-only dashboard view (no auth)
 - [x] ruff ✅ 0 errors, mypy ✅ 0 errors, tsc ✅ 0 errors
-- [x] Fixes: axios interceptor clearAuth(), CSV upload reset on success, base-ui asChild removed, TanStack Query v5 refetchInterval callback form
+- [x] Tests: test_phase4_dashboards.py — 72 tests (CRUD, RBAC, org isolation, sharing, widgets, query results)
+- [x] Tests: test_metrics.py — 27 tests (endpoint format, metric families, counter increments, duration sanity)
+- [x] Commit: 7393c68 feat: Phase 4 complete
 
 ## Phase 5 — Alerts (Should Have)
 - [ ] NOT STARTED
