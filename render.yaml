@@ -1,0 +1,81 @@
+services:
+  - type: web
+    name: wexa-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -e .
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: FRONTEND_URL
+        sync: false
+      - key: RESEND_API_KEY
+        value: ""
+      - key: EMAIL_FROM
+        value: noreply@wexa.ai
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "15"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
+  - type: worker
+    name: wexa-worker
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -e .
+    startCommand: celery -A app.workers.celery_app.celery_app worker -Q ingestion,celery -c 2 --loglevel=info
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: FRONTEND_URL
+        sync: false
+      - key: RESEND_API_KEY
+        value: ""
+      - key: EMAIL_FROM
+        value: noreply@wexa.ai
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "15"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
+  - type: worker
+    name: wexa-beat
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -e .
+    startCommand: celery -A app.workers.celery_app.celery_app beat --loglevel=info
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: FRONTEND_URL
+        sync: false
+      - key: RESEND_API_KEY
+        value: ""
+      - key: EMAIL_FROM
+        value: noreply@wexa.ai
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "15"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
