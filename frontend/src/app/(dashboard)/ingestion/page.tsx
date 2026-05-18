@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Copy, Eye, EyeOff, KeyRound, Plus, RefreshCw, Trash2, Upload } from 'lucide-react'
+import { Copy, Eye, EyeOff, KeyRound, Link2, Plus, RefreshCw, Trash2, Upload } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -410,6 +410,61 @@ signup,2024-01-01T11:30:00Z,/signup,user_789`}</pre>
           </CardContent>
         </Card>
       )}
+
+      {/* Webhook */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Link2 className="h-5 w-5" /> Webhook Receiver
+          </CardTitle>
+          <CardDescription>
+            Point any external service (Stripe, GitHub, etc.) at this URL. Use your API key as the{' '}
+            <code className="text-xs">X-Webhook-Secret</code> header — no separate secret needed.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Paste your API key here to generate the test command"
+              value={quickStartKey}
+              onChange={(e) => setQuickStartKey(e.target.value)}
+              className="font-mono text-xs"
+            />
+            {quickStartKey && (
+              <Button size="sm" variant="outline" onClick={() => setQuickStartKey('')}>Clear</Button>
+            )}
+          </div>
+
+          <div className="relative">
+            <pre className={`rounded bg-muted p-4 text-xs overflow-x-auto whitespace-pre-wrap ${!quickStartKey ? 'opacity-50' : ''}`}>{`# Test webhook (simulates a Stripe-style payload)
+curl -X POST ${process.env.NEXT_PUBLIC_API_URL}/api/v1/ingest/webhook \\
+  -H "X-Webhook-Secret: ${quickStartKey || 'YOUR_API_KEY'}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"type": "payment.succeeded", "amount": 4999, "currency": "usd"}'`}</pre>
+            {quickStartKey && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="absolute right-2 top-2 h-7 text-xs"
+                onClick={() => copyToClipboard(
+                  `curl -X POST ${process.env.NEXT_PUBLIC_API_URL}/api/v1/ingest/webhook \\\n  -H "X-Webhook-Secret: ${quickStartKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"type": "payment.succeeded", "amount": 4999, "currency": "usd"}'`
+                )}
+              >
+                <Copy className="mr-1 h-3 w-3" /> Copy
+              </Button>
+            )}
+          </div>
+
+          <details className="text-xs text-muted-foreground">
+            <summary className="cursor-pointer hover:text-foreground">How event name is resolved</summary>
+            <div className="mt-2 rounded bg-muted p-3 space-y-1">
+              <p>The backend reads the first matching field from your payload:</p>
+              <p><code className="font-mono">event</code> → <code className="font-mono">event_name</code> → <code className="font-mono">type</code> → <code className="font-mono">action</code> → <code className="font-mono">&quot;webhook_event&quot;</code></p>
+              <p className="mt-2">Everything else lands in <code className="font-mono">properties</code>. Any JSON shape is accepted.</p>
+            </div>
+          </details>
+        </CardContent>
+      </Card>
 
       {/* Quick-start code snippet */}
       <Card>
