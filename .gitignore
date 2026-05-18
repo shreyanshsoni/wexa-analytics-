@@ -48,3 +48,25 @@ Thumbs.db
 # Uploads
 uploads/
 temp/
+
+# AI tool internals (not part of submission)
+.claude/
+.kiro/
+CLAUDE.md
+
+# Internal dev docs
+CHANGELOG.md
+MANUAL_TESTING.md
+
+# Frontend scaffold/internals
+frontend/README.md
+frontend/AGENTS.md
+frontend/CLAUDE.md
+frontend/tsconfig.tsbuildinfo
+
+# Default Next.js placeholder assets (unused)
+frontend/public/file.svg
+frontend/public/globe.svg
+frontend/public/next.svg
+frontend/public/vercel.svg
+frontend/public/window.svg
