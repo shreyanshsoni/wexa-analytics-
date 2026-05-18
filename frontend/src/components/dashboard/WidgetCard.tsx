@@ -1,6 +1,6 @@
 'use client'
 
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { GripVertical, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,7 @@ import { KpiCardWidget } from '@/components/charts/KpiCardWidget'
 import { LineChartWidget } from '@/components/charts/LineChartWidget'
 import { PieChartWidget } from '@/components/charts/PieChartWidget'
 import { TableWidget } from '@/components/charts/TableWidget'
+import type { DraggableSyntheticListeners } from '@dnd-kit/core'
 import type { QueryResultPoint, Widget } from '@/types/api'
 
 interface Props {
@@ -19,6 +20,7 @@ interface Props {
   isEditMode: boolean
   onEdit: (widget: Widget) => void
   onDelete: (widgetId: string) => void
+  dragListeners?: DraggableSyntheticListeners
 }
 
 function ChartContent({ widget }: { widget: Widget }) {
@@ -41,7 +43,7 @@ function ChartContent({ widget }: { widget: Widget }) {
   }
 }
 
-export function WidgetCard({ widget, isEditMode, onEdit, onDelete }: Props) {
+export function WidgetCard({ widget, isEditMode, onEdit, onDelete, dragListeners }: Props) {
   const isCached = widget.query_result?.cached
 
   return (
@@ -49,6 +51,14 @@ export function WidgetCard({ widget, isEditMode, onEdit, onDelete }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between border-b px-3 py-2 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
+          {isEditMode && (
+            <span
+              {...dragListeners}
+              className="shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
+            >
+              <GripVertical className="h-4 w-4" />
+            </span>
+          )}
           <p className="truncate text-sm font-medium">{widget.title}</p>
           {isCached && (
             <span className="shrink-0 text-xs text-muted-foreground">(cached)</span>

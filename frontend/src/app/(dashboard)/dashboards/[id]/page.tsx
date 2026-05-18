@@ -146,8 +146,14 @@ function SortableWidget({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <div className={`h-full ${isEditMode ? 'cursor-grab active:cursor-grabbing' : ''}`} {...(isEditMode ? listeners : {})}>
-        <WidgetCard widget={widget} isEditMode={isEditMode} onEdit={onEdit} onDelete={onDelete} />
+      <div className="h-full">
+        <WidgetCard
+          widget={widget}
+          isEditMode={isEditMode}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          dragListeners={isEditMode ? listeners : undefined}
+        />
       </div>
     </div>
   )
