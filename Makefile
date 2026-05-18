@@ -5,7 +5,7 @@ backend:
 	cd backend && .venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 worker:
-	cd backend && .venv/bin/celery -A app.workers.celery_app worker --loglevel=info
+	cd backend && .venv/bin/celery -A app.workers.celery_app worker --loglevel=info -Q ingestion,celery
 
 beat:
 	cd backend && .venv/bin/celery -A app.workers.celery_app beat --loglevel=info

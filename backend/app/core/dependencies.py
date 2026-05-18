@@ -132,3 +132,17 @@ async def get_org_by_api_key(
 
 
 ApiKeyDep = Annotated[tuple[uuid.UUID, uuid.UUID], Depends(get_org_by_api_key)]
+
+
+async def get_org_by_webhook_secret(
+    db: DbDep,
+    x_webhook_secret: Annotated[str | None, Header(alias="X-Webhook-Secret")] = None,
+) -> tuple[uuid.UUID, uuid.UUID]:
+    if not x_webhook_secret:
+        raise AuthenticationError("X-Webhook-Secret header required")
+    from app.services.api_key_service import get_org_by_api_key as _get_org
+    api_key, org_id = await _get_org(db, x_webhook_secret)
+    return api_key.id, org_id
+
+
+WebhookDep = Annotated[tuple[uuid.UUID, uuid.UUID], Depends(get_org_by_webhook_secret)]

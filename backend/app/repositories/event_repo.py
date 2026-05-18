@@ -43,3 +43,18 @@ class EventRepository(BaseRepository[Event]):
             )
         )
         return result.scalar_one()
+
+    async def count_by_org_since_created(
+        self,
+        org_id: uuid.UUID,
+        since: datetime,
+    ) -> int:
+        result = await self.session.execute(
+            select(func.count(Event.id)).where(
+                and_(
+                    Event.organization_id == org_id,
+                    Event.created_at >= since,
+                )
+            )
+        )
+        return result.scalar_one()

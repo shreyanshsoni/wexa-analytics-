@@ -53,3 +53,39 @@ class IngestionStatsResponse(BaseSchema):
     total_week: int
     total_month: int
     total_all_time: int
+
+
+class WebhookPayload(BaseSchema):
+    """Flexible webhook payload — accepts any JSON structure.
+
+    Event name is extracted from the first matching field:
+    event → event_name → type → action → "webhook_event"
+    Everything else lands in properties.
+    """
+    model_config = {"extra": "allow"}
+
+    event: str | None = None
+    event_name: str | None = None
+    type: str | None = None
+    action: str | None = None
+    properties: dict[str, Any] = Field(default_factory=dict)
+    timestamp: datetime | None = None
+
+    def resolved_event_name(self) -> str:
+        return (
+            self.event
+            or self.event_name
+            or self.type
+            or self.action
+            or "webhook_event"
+        )
+
+    def resolved_properties(self) -> dict[str, Any]:
+        extra = self.model_extra or {}
+        return {**self.properties, **extra}
+
+
+class WebhookResponse(BaseSchema):
+    received: int
+    batch_id: str
+    message: str

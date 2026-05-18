@@ -7,7 +7,14 @@ import structlog
 from fastapi import APIRouter, File, UploadFile
 from fastapi import status as http_status
 
-from app.core.dependencies import ApiKeyDep, DbDep, RedisDep, RequireAnalyst, RequireMember
+from app.core.dependencies import (
+    ApiKeyDep,
+    DbDep,
+    RedisDep,
+    RequireAnalyst,
+    RequireMember,
+    WebhookDep,
+)
 from app.core.exceptions import ValidationError
 from app.schemas.common import ApiResponse
 from app.schemas.event import (
@@ -16,6 +23,8 @@ from app.schemas.event import (
     EventIngestionRequest,
     IngestionResponse,
     IngestionStatsResponse,
+    WebhookPayload,
+    WebhookResponse,
 )
 from app.services import ingestion_service
 
@@ -115,6 +124,31 @@ async def upload_csv(
     return ApiResponse(data=CsvUploadResponse(
         upload_id=upload_id,
         message=f"CSV accepted ({len(content):,} bytes). Processing in background.",
+    ))
+
+
+@router.post(
+    "/webhook",
+    status_code=200,
+    response_model=ApiResponse[WebhookResponse],
+    summary="Receive a webhook event from an external service",
+)
+async def receive_webhook(
+    body: WebhookPayload,
+    webhook_ctx: WebhookDep,
+    redis: RedisDep,
+) -> ApiResponse[WebhookResponse]:
+    api_key_id, org_id = webhook_ctx
+    event_name = body.resolved_event_name()
+    properties = body.resolved_properties()
+    batch_id = await ingestion_service.ingest_webhook(
+        redis, event_name, properties, body.timestamp, api_key_id, org_id
+    )
+    logger.info("webhook_received", org_id=str(org_id), event_name=event_name)
+    return ApiResponse(data=WebhookResponse(
+        received=1,
+        batch_id=batch_id,
+        message=f"Webhook event '{event_name}' accepted for processing",
     ))
 
 

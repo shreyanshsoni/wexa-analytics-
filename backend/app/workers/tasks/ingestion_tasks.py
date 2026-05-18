@@ -7,8 +7,11 @@ from datetime import UTC, datetime
 from typing import Any
 
 import structlog
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
-from app.core.database import AsyncSessionLocal
+from app.core.config import settings
 from app.models.event import Event
 from app.workers.celery_app import celery_app
 
@@ -40,9 +43,16 @@ def _build_event(data: dict[str, Any], org_id: uuid.UUID, source: str = "api") -
 
 
 async def _store_events(events: list[Event]) -> None:
-    async with AsyncSessionLocal() as db:
-        db.add_all(events)
-        await db.commit()
+    # NullPool: no connection reuse — required because asyncio.run() closes the
+    # event loop after each task, making pooled asyncpg connections invalid.
+    engine = create_async_engine(settings.async_database_url, poolclass=NullPool)
+    session_factory = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    try:
+        async with session_factory() as db:
+            db.add_all(events)
+            await db.commit()
+    finally:
+        await engine.dispose()
 
 
 # ── tasks ─────────────────────────────────────────────────────────────────────
@@ -57,6 +67,7 @@ async def _store_events(events: list[Event]) -> None:
     retry_jitter=True,
     name="ingestion.process_event",
     queue="ingestion",
+    ignore_result=True,
 )
 def process_event(
     self: Any,
@@ -85,6 +96,7 @@ def process_event(
     retry_jitter=True,
     name="ingestion.process_batch_events",
     queue="ingestion",
+    ignore_result=True,
 )
 def process_batch_events(
     self: Any,
@@ -114,6 +126,7 @@ def process_batch_events(
     retry_jitter=True,
     name="ingestion.process_csv_upload",
     queue="ingestion",
+    ignore_result=True,
 )
 def process_csv_upload(
     self: Any,

@@ -14,13 +14,13 @@ export function KpiCardWidget({ data, title }: Props) {
   const change = prev > 0 ? ((latest - prev) / prev) * 100 : null
 
   return (
-    <div className="flex h-full flex-col justify-center p-2">
+    <div className="flex h-full flex-col justify-start p-3 pt-4">
       <p className="text-xs font-medium text-muted-foreground truncate">{title}</p>
-      <p className="mt-1 text-3xl font-bold tabular-nums">
+      <p className="mt-1 text-3xl font-bold tabular-nums leading-tight">
         {total.toLocaleString()}
       </p>
       {change !== null && (
-        <p className={`mt-1 text-xs font-medium ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+        <p className={`mt-2 text-xs font-medium ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
           {change >= 0 ? '↑' : '↓'} {Math.abs(change).toFixed(1)}% vs prev period
         </p>
       )}

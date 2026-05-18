@@ -28,11 +28,11 @@ _ssl_options: dict[str, Any] | None = (
 
 _redis_transport_opts: dict[str, Any] = {
     "visibility_timeout": 3600,
-    "socket_timeout": 30,
-    "socket_connect_timeout": 10,
+    "socket_timeout": 10,
+    "socket_connect_timeout": 5,
     "socket_keepalive": True,
     "retry_on_timeout": True,
-    "health_check_interval": 30,
+    "health_check_interval": 25,
 }
 
 celery_app.conf.update(

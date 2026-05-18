@@ -59,6 +59,29 @@ async def ingest_batch(
     return batch_id
 
 
+async def ingest_webhook(
+    redis: Redis,
+    event_name: str,
+    properties: dict[str, Any],
+    timestamp: Any,
+    api_key_id: uuid.UUID,
+    org_id: uuid.UUID,
+) -> str:
+    await _check_rate_limit(redis, f"rl:org:{org_id}:events", _ORG_RATE_LIMIT)
+    await _check_rate_limit(redis, f"rl:key:{api_key_id}:events", _KEY_RATE_LIMIT)
+
+    from app.workers.tasks.ingestion_tasks import process_event
+    batch_id = str(uuid.uuid4())
+    event_data = {
+        "event_name": event_name,
+        "properties": properties,
+        "timestamp": timestamp.isoformat() if hasattr(timestamp, "isoformat") else None,
+    }
+    process_event.delay(event_data, str(org_id), batch_id)
+    logger.info("webhook_event_queued", org_id=str(org_id), event_name=event_name)
+    return batch_id
+
+
 async def queue_csv_upload(
     org_id: uuid.UUID,
     file_path: str,
@@ -79,15 +102,17 @@ async def get_ingestion_stats(
     now = datetime.now(UTC)
 
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow_start = today_start + timedelta(days=1)
     week_start = now - timedelta(days=7)
     month_start = now - timedelta(days=30)
+    epoch = datetime(2000, 1, 1, tzinfo=UTC)
 
-    total_today = await repo.count_by_org_in_range(org_id, today_start, now)
-    total_week = await repo.count_by_org_in_range(org_id, week_start, now)
-    total_month = await repo.count_by_org_in_range(org_id, month_start, now)
-    total_all_time = await repo.count_by_org_in_range(
-        org_id, datetime(2000, 1, 1, tzinfo=UTC), now
-    )
+    # Use timestamp (business event time) so seed data spans correctly across buckets.
+    # today uses full-day range (not <= NOW()) to include future-timestamped seed events.
+    total_today = await repo.count_by_org_in_range(org_id, today_start, tomorrow_start)
+    total_week = await repo.count_by_org_in_range(org_id, week_start, tomorrow_start)
+    total_month = await repo.count_by_org_in_range(org_id, month_start, tomorrow_start)
+    total_all_time = await repo.count_by_org_in_range(org_id, epoch, tomorrow_start)
 
     return {
         "total_today": total_today,

@@ -77,6 +77,7 @@ export default function IngestionPage() {
   const [newKeySecret, setNewKeySecret] = useState<string | null>(null)
   const [showSecret, setShowSecret] = useState(false)
   const [revealedKeys, setRevealedKeys] = useState<Record<string, string>>({})
+  const [quickStartKey, setQuickStartKey] = useState('')
 
   // CSV upload
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -285,10 +286,10 @@ export default function IngestionPage() {
                           size="icon"
                           variant="ghost"
                           title="Rotate key"
-                          disabled={rotateMutation.isPending}
+                          disabled={rotateMutation.isPending && rotateMutation.variables === key.id}
                           onClick={() => rotateMutation.mutate(key.id)}
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          <RefreshCw className={`h-4 w-4 ${rotateMutation.isPending && rotateMutation.variables === key.id ? 'animate-spin' : ''}`} />
                         </Button>
                         <Button
                           size="icon"
@@ -414,13 +415,53 @@ signup,2024-01-01T11:30:00Z,/signup,user_789`}</pre>
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Quick Start</CardTitle>
-          <CardDescription>Send your first event with curl</CardDescription>
+          <CardDescription>Paste your API key below to generate a ready-to-run curl command</CardDescription>
         </CardHeader>
-        <CardContent>
-          <pre className="rounded bg-muted p-4 text-xs overflow-x-auto">{`curl -X POST ${process.env.NEXT_PUBLIC_API_URL}/api/v1/ingest/events \\
-  -H "X-API-Key: YOUR_API_KEY" \\
+        <CardContent className="space-y-3">
+          {/* Key input */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Paste your API key here (e.g. wxa_xxxxxxxx...)"
+              value={quickStartKey}
+              onChange={(e) => setQuickStartKey(e.target.value)}
+              className="font-mono text-xs"
+            />
+            {quickStartKey && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setQuickStartKey('')}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+
+          {/* curl command */}
+          <div className="relative">
+            <pre className={`rounded bg-muted p-4 text-xs overflow-x-auto ${!quickStartKey ? 'opacity-50' : ''}`}>{`curl -X POST ${process.env.NEXT_PUBLIC_API_URL}/api/v1/ingest/events \\
+  -H "X-API-Key: ${quickStartKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{"event": "page_view", "properties": {"url": "/home", "user_id": "123"}}'`}</pre>
+            {quickStartKey && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="absolute right-2 top-2 h-7 text-xs"
+                onClick={() => copyToClipboard(
+                  `curl -X POST ${process.env.NEXT_PUBLIC_API_URL}/api/v1/ingest/events \\\n  -H "X-API-Key: ${quickStartKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"event": "page_view", "properties": {"url": "/home", "user_id": "123"}}'`
+                )}
+              >
+                <Copy className="mr-1 h-3 w-3" /> Copy
+              </Button>
+            )}
+          </div>
+
+          {!quickStartKey && (
+            <p className="text-xs text-muted-foreground">
+              Create or rotate a key above → copy the full key → paste it here to auto-fill the command.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
