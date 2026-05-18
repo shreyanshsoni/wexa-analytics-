@@ -98,7 +98,7 @@ Next Action:  Implement alert models, alert_service.py, then api/v1/alerts.py
 - [x] Backend: app/api/v1/saved_queries.py — full CRUD for /saved-queries; RBAC fixed (RequireMember reads, RequireAnalyst writes)
 - [x] Backend: app/api/router.py — dashboards, widgets, saved_queries routers registered
 - [x] Backend: Prometheus metrics at GET /metrics — prometheus-fastapi-instrumentator v7.1.0, excludes /metrics self-tracking
-- [x] Backend: scripts/seed.py — full demo seed: 4 users (Owner/Admin/Analyst/Viewer), 2500 events over 30 days, 8 saved queries, 4 dashboards; `make seed`
+- [x] Backend: scripts/seed.py — full demo seed: 4 users (Owner/Admin/Analyst/Viewer), 2500 events over 30 days, 9 saved queries, 4 dashboards; `make seed`
 - [x] Backend: Security fix — get_dashboard + get_widget return 404 (not 403) for cross-org to prevent ID enumeration
 - [x] Backend: Share fix — body.is_public → body.enabled, ShareResponse.share_url → str | None
 - [x] Frontend: src/types/api.ts — fully updated with Dashboard, Widget, SavedQuery, QueryResult types
@@ -112,6 +112,7 @@ Next Action:  Implement alert models, alert_service.py, then api/v1/alerts.py
 - [x] Tests: test_phase4_dashboards.py — 72 tests (CRUD, RBAC, org isolation, sharing, widgets, query results)
 - [x] Tests: test_metrics.py — 27 tests (endpoint format, metric families, counter increments, duration sanity)
 - [x] Commit: 7393c68 feat: Phase 4 complete
+- [x] Post-Phase4 fixes: Celery queue fix (-Q ingestion,celery), NullPool for asyncio.run(), ignore_result=True, health_check_interval=25 for Upstash idle, stats use timestamp with full-day range, POST /ingest/webhook with X-Webhook-Secret, KPI card grid layout (gridAutoRows:50px), 9th saved query "Total Events by Type" added
 
 ## Phase 5 — Alerts (Should Have)
 - [ ] NOT STARTED

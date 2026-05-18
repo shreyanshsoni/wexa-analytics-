@@ -140,8 +140,8 @@ function SortableWidget({
     transition,
     opacity: isDragging ? 0.5 : 1,
     gridColumn: `span ${widget.width}`,
-    gridRow: `span ${Math.ceil(widget.height / 2)}`,
-    minHeight: `${widget.height * 40}px`,
+    gridRow: `span ${widget.height}`,
+    minHeight: `${widget.height * 50}px`,
   }
 
   return (
@@ -561,7 +561,7 @@ export default function DashboardPage({ params }: { params: Promise<{ id: string
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={widgetOrder} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-12 gap-4" style={{ gridAutoRows: '80px' }}>
+            <div className="grid grid-cols-12 gap-4" style={{ gridAutoRows: '50px' }}>
               {sortedWidgets.map((widget) => (
                 <SortableWidget
                   key={widget.id}

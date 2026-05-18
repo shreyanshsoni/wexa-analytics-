@@ -297,6 +297,10 @@ async def _create_saved_queries(
             "name": "Total Page Views (30 days)",
             "config": {"event_name": "page_view", "aggregation": "count", "group_by": "day", "filters": [], "time_range": "30d"},
         },
+        {
+            "name": "Total Events by Type",
+            "config": {"event_name": None, "aggregation": "count", "group_by": "event_type", "filters": [], "time_range": "30d"},
+        },
     ]
 
     saved: dict[str, SavedQuery] = {}
