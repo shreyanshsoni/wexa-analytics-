@@ -46,7 +46,7 @@ async def _store_events(events: list[Event]) -> None:
     # NullPool: no connection reuse — required because asyncio.run() closes the
     # event loop after each task, making pooled asyncpg connections invalid.
     engine = create_async_engine(settings.async_database_url, poolclass=NullPool)
-    session_factory = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    session_factory = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)  # type: ignore[call-overload]
     try:
         async with session_factory() as db:
             db.add_all(events)
